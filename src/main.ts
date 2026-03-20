@@ -56,7 +56,7 @@ async function bootstrap() {
   server.headersTimeout = 31000; // 31 seconds
 
   // Only enable Swagger in development mode
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
     const config = new DocumentBuilder()
       .setTitle('Authentication API')
       .setDescription('API documentation for authentication and contact endpoints')

@@ -67,7 +67,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    container_name: college-api-prod
+    container_name: survey-api-prod
     env_file:
       - ".env.production"
     ports:
