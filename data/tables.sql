@@ -124,14 +124,13 @@ CREATE TABLE `surveys` (
   `startDate` datetime DEFAULT NULL,
   `endDate` datetime DEFAULT NULL,
   `isAnonymous` tinyint NOT NULL DEFAULT '1',
-  `creatorId` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_09b6e7ba4d0af3e2af75b740082` (`creatorId`),
   CONSTRAINT `FK_09b6e7ba4d0af3e2af75b740082` FOREIGN KEY (`creatorId`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `survey_parties` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` varchar(255) NOT NULL,
   `survey_id` varchar(255) DEFAULT NULL,
   `party_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),

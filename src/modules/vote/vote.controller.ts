@@ -8,6 +8,7 @@ import {
   Query,
   HttpStatus,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,7 +31,7 @@ import { CreateVoteDto } from './dto/create-vote.dto';
 export class VoteController {
   constructor(private readonly voteService: VoteService) {}
 
-  @Post()
+  @Post('survey/:surveyId')
   @ApiOperation({
     summary: 'Cast a vote',
     description: 'Creates a new vote for a survey and party',
@@ -55,8 +56,12 @@ export class VoteController {
     description: 'Invalid input data or survey is not active',
   })
   async create(
+    @Param('surveyId') surveyId: string,
     @Body() createVoteDto: CreateVoteDto
   ): Promise<ResponseDto<Vote>> {
+    if(createVoteDto.surveyId !== surveyId) {
+      throw new BadRequestException('Invalid Survey code');
+    }
     const vote = await this.voteService.create(createVoteDto);
     return ResponseDto.created(vote, 'Vote created successfully');
   }

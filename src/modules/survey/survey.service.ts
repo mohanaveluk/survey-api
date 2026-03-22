@@ -50,13 +50,13 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
 
       // Validate creator if provided
       let creator: User | undefined;
-      if (surveyData.creatorId) {
+      if (surveyData.createdBy) {
         creator = await this.userRepository.findOne({
-          where: { uguid: surveyData.creatorId },
+          where: { uguid: surveyData.createdBy },
         });
         if (!creator) {
           throw new NotFoundException(
-            `User with ID '${surveyData.creatorId}' not found`
+            `User with ID '${surveyData.createdBy}' not found`
           );
         }
       } else if (user) {
@@ -112,7 +112,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       // Return survey with relations
       return await this.surveyRepository.findOne({
         where: { id: savedSurvey.id },
-        relations: ['parties', 'parties.party', 'creator'],
+        relations: ['surveyParties', 'surveyParties.party', 'creator'],
       });
     } catch (error) {
       if (
@@ -134,7 +134,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
   async findAll(): Promise<Survey[]> {
     try {
       return await this.surveyRepository.find({
-        relations: ['parties', 'parties.party', 'creator'],
+        relations: ['surveyParties', 'surveyParties.party', 'creator', 'votes'],
         order: { createdAt: 'DESC' },
       });
     } catch (error) {
@@ -146,7 +146,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
     try {
       return await this.surveyRepository.find({
         where: { isActive: true },
-        relations: ['parties', 'parties.party', 'creator'],
+        relations: ['surveyParties', 'surveyParties.party', 'creator'],
         order: { createdAt: 'DESC' },
       });
     } catch (error) {
@@ -158,7 +158,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
     try {
       return await this.surveyRepository.find({
         where: { status },
-        relations: ['parties', 'parties.party', 'creator'],
+        relations: ['surveyParties', 'surveyParties.party', 'creator'],
         order: { createdAt: 'DESC' },
       });
     } catch (error) {
@@ -172,7 +172,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
     try {
       const survey = await this.surveyRepository.findOne({
         where: { id },
-        relations: ['parties', 'parties.party', 'creator'],
+        relations: ['surveyParties', 'surveyParties.party', 'creator', 'votes'],
       });
 
       if (!survey) {
@@ -185,6 +185,27 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
         throw error;
       }
       throw new BadRequestException('Failed to retrieve survey');
+    }
+  }
+
+  //create a method to find survey by userId without relations (for internal use)
+  async findByUserId(userId: string): Promise<Survey[]> {
+    try {
+
+      const user = await this.userRepository.findOne({
+        where: { uguid: userId },
+      });
+      if (!user) {
+        throw new NotFoundException(`User with ID '${userId}' not found`);
+      }
+
+      return await this.surveyRepository.find({
+        where: { createdBy: user.id.toString() },
+        relations: ['surveyParties', 'surveyParties.party', 'creator', 'votes'],
+        order: { createdAt: 'DESC' },
+      });
+    } catch (error) {
+      throw new BadRequestException('Failed to retrieve surveys');
     }
   }
 
@@ -226,13 +247,13 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       }
 
       // Validate creator if being updated
-      if (surveyData.creatorId) {
+      if (surveyData.createdBy) {
         const creator = await this.userRepository.findOne({
-          where: { uguid: surveyData.creatorId },
+          where: { uguid: surveyData.createdBy },
         });
         if (!creator) {
           throw new NotFoundException(
-            `User with ID '${surveyData.creatorId}' not found`
+            `User with ID '${surveyData.createdBy}' not found`
           );
         }
       }
@@ -280,9 +301,9 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       if (surveyData.isAnonymous !== undefined)
         updateData.isAnonymous = surveyData.isAnonymous;
 
-      if (surveyData.creatorId) {
+      if (surveyData.createdBy) {
         const creator = await this.userRepository.findOne({
-          where: { uguid: surveyData.creatorId },
+          where: { uguid: surveyData.createdBy },
         });
         updateData.creator = creator;
       }
@@ -323,7 +344,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       const survey = await this.findOne(id);
 
       // Check if user has permission to publish (if user context is provided)
-      if (user && survey.creator && survey.creator.id !== user.id) {
+      if (user && survey.creator && survey.creator.uguid !== user.uguid.toString()) {
         throw new ForbiddenException(
           'You can only publish surveys that you created'
         );
@@ -346,12 +367,12 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       // Check if survey has parties associated (optional validation)
       const surveyWithParties = await this.surveyRepository.findOne({
         where: { id },
-        relations: ['parties'],
+        relations: ['surveyParties'],
       });
 
       if (
-        !surveyWithParties?.parties ||
-        surveyWithParties.parties.length === 0
+        !surveyWithParties?.surveyParties ||
+        surveyWithParties.surveyParties.length === 0
       ) {
         throw new BadRequestException(
           'Survey must have at least one party before publishing'
@@ -400,6 +421,79 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
     }
   }
 
+
+  async closeSurvey(
+    id: string,
+    publishDto?: PublishSurveyDto,
+    user?: User
+  ): Promise<Survey> {
+    try {
+      const survey = await this.findOne(id);
+
+      // Check if user has permission to publish (if user context is provided)
+      if (user && survey.creator && survey.creator.uguid !== user.uguid.toString()) {
+        throw new ForbiddenException(
+          'You can only publish surveys that you created'
+        );
+      }
+
+      // Can only close DRAFT or PUBLISHED surveys
+      if (survey.status !== SurveyStatus.DRAFT && survey.status !== SurveyStatus.PUBLISHED) {
+        throw new ForbiddenException(
+          `Cannot change status from '${survey.status}'. Only DRAFT and PUBLISHED surveys can be closed.`
+        );
+      }
+
+
+      // Check if survey has parties associated (optional validation)
+      const surveyWithParties = await this.surveyRepository.findOne({
+        where: { id },
+        relations: ['surveyParties'],
+      });
+
+      if (
+        !surveyWithParties?.surveyParties ||
+        surveyWithParties.surveyParties.length === 0
+      ) {
+        throw new BadRequestException(
+          'Survey must have at least one party before closing'
+        );
+      }
+
+      // Set status to CLOSED or the provided status
+      const newStatus = publishDto?.status ?? SurveyStatus.CLOSED;
+
+      // Validate status transition
+      if (
+        newStatus !== SurveyStatus.PUBLISHED &&
+        newStatus !== SurveyStatus.CLOSED
+      ) {
+        throw new BadRequestException(
+          'Can only close to PUBLISHED or CLOSED status'
+        );
+      }
+
+      survey.status = newStatus;
+
+      // Set start date to now if not specified and publishing
+      if (newStatus === SurveyStatus.PUBLISHED && !survey.startDate) {
+        survey.startDate = new Date();
+      }
+
+      return await this.surveyRepository.save(survey);
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to close survey');
+    }
+  }
+
+
   async remove(id: string): Promise<void> {
     try {
       const survey = await this.findOne(id);
@@ -407,12 +501,12 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       // Check if survey has any associated parties
       const surveyWithParties = await this.surveyRepository.findOne({
         where: { id },
-        relations: ['parties'],
+        relations: ['surveyParties'],
       });
 
-      if (surveyWithParties?.parties && surveyWithParties.parties.length > 0) {
+      if (surveyWithParties?.surveyParties && surveyWithParties.surveyParties.length > 0) {
         throw new ConflictException(
-          `Cannot delete survey '${survey.name}' as it has ${surveyWithParties.parties.length} associated parties. Please remove party associations first.`
+          `Cannot delete survey '${survey.name}' as it has ${surveyWithParties.surveyParties.length} associated parties. Please remove party associations first.`
         );
       }
 

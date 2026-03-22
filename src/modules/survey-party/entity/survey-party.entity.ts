@@ -2,18 +2,25 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  BeforeInsert,
+  PrimaryColumn
 } from 'typeorm';
 import { Survey } from '../../survey/entity/survey.entity';
 import { PartyMaster } from '../../party/entity/party.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('survey_parties')
 export class SurveyParty {
 
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn()
+  id: string;
+  @BeforeInsert()
+  generateId() {
+    this.id = uuidv4();
+  }
 
-  @ManyToOne(() => Survey, survey => survey.parties)
+  @ManyToOne(() => Survey, survey => survey.surveyParties)
   @JoinColumn({ name: 'survey_id' })
   survey: Survey;
 

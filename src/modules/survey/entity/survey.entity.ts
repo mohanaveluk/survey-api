@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { SurveyParty } from '../../survey-party/entity/survey-party.entity';
 import { User } from 'src/modules/user/entity/user.entity';
+import { Vote } from 'src/modules/vote/entity/vote.entity';
 
 export enum SurveyStatus {
   DRAFT = 'draft',
@@ -39,20 +40,23 @@ export class Survey {
   })
   status: SurveyStatus;
 
-  @Column({ nullable: true })
+  @Column({name: 'start_date', nullable: true })
   startDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ name: 'end_date', nullable: true })
   endDate: Date;
 
-  @Column({ default: true })
+  @Column({ name: 'is_anonymous', default: true })
   isAnonymous: boolean;
 
 
   @OneToMany(() => SurveyParty, sp => sp.survey)
-  parties: SurveyParty[];
+  surveyParties: SurveyParty[];
+
+  @OneToMany(() => Vote , vote => vote.survey)
+  votes: Vote[];
 
   @ManyToOne(() => User, (user) => user.surveys)
-  @JoinColumn({ name: 'creatorId' })
+  @JoinColumn({ name: 'created_by' })
   creator: User;  
 }

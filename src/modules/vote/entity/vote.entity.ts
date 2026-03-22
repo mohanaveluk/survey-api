@@ -37,6 +37,12 @@ export class Vote {
   @Column({ nullable: true })
   location: string;
 
+  @Column({ name: 'survey_id' })
+  surveyId: string;
+
+  @Column({ name: 'party_id' })
+  partyId: string;
+
   @ManyToOne(() => Survey)
   @JoinColumn({ name: 'survey_id' })
   survey: Survey;
