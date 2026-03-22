@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 import { Vote } from "./entity/vote.entity";
 import { PartyMaster } from "../party/entity/party.entity";
-import { Survey } from "../survey/entity/survey.entity";
+import { Survey, SurveyStatus } from "../survey/entity/survey.entity";
 import { CreateVoteDto } from "./dto/create-vote.dto";
 import { SurveyVoteSummaryDto, VoteSummaryDto } from "./dto/vote-summary.dto";
 
@@ -43,6 +43,33 @@ export class VoteService {
       if (!survey.isActive) {
         throw new BadRequestException(
           `Survey '${survey.name}' is not active and cannot accept votes`
+        );
+      }
+
+      // Verify survey is within voting period
+      const now = new Date();
+      if (survey.startDate && now < survey.startDate) {
+        throw new BadRequestException(
+          `Voting for survey '${survey.name}' has not started yet`
+        );
+      }
+      if (survey.endDate && now > survey.endDate) {
+        throw new BadRequestException(
+          `Voting for survey '${survey.name}' has ended`
+        );
+      }
+
+      //verify if survey is closed
+      if (survey.status === SurveyStatus.CLOSED) {
+        throw new BadRequestException(
+          `Survey '${survey.name}' is closed and cannot accept votes`
+        );
+      }
+
+      // verify surve is in PUBLISHED status
+      if (survey.status !== SurveyStatus.PUBLISHED) {
+        throw new BadRequestException(
+          `Survey '${survey.name}' is not published and cannot accept votes`
         );
       }
 

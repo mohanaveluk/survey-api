@@ -132,6 +132,35 @@ export class SurveyController {
     );
   }
 
+  @Get('u/:userId') // Changed route to avoid conflict with findOne by user
+  @ApiOperation({
+    summary: 'Get survey by user ID',
+    description:
+      'Retrieves surveys created by a specific user',
+  })
+  @ApiParam({
+    name: 'userId',
+    description: 'Unique identifier of the user',
+    example: 'USER001',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Survey retrieved successfully',
+    type: ResponseDto<Survey>,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Survey not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid survey ID format',
+  })
+  async findByUserId(@Param('userId') userId: string): Promise<ResponseDto<Survey[]>> {
+    const surveys = await this.surveyService.findByUserId(userId);
+    return ResponseDto.success(surveys, `Retrieved ${surveys.length} surveys for user '${userId}'`);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get survey by ID',
@@ -254,6 +283,56 @@ export class SurveyController {
     @Request() req
   ): Promise<ResponseDto<Survey>> {
     const survey = await this.surveyService.publishSurvey(
+      id,
+      publishDto,
+      req.user
+    );
+    const statusText =
+      survey.status === SurveyStatus.PUBLISHED ? 'published' : 'closed';
+    return ResponseDto.updated(survey, `Survey ${statusText} successfully`);
+  }
+
+  @Put(':id/close')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Close survey',
+    description:
+      'Changes survey status from DRAFT to CLOSED. Once published, survey cannot be updated.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Unique identifier of the survey to publish',
+    example: 'SURVEY001',
+  })
+  @ApiBody({ type: PublishSurveyDto, required: false })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Survey published successfully',
+    type: ResponseDto<Survey>,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Survey not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Cannot publish survey (not in DRAFT status or not owner)',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Survey not ready for publishing (missing required data)',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication required',
+  })
+  async closeSurvey(
+    @Param('id') id: string,
+    @Body() publishDto: PublishSurveyDto,
+    @Request() req
+  ): Promise<ResponseDto<Survey>> {
+    const survey = await this.surveyService.closeSurvey(
       id,
       publishDto,
       req.user

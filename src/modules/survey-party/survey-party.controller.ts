@@ -223,7 +223,7 @@ export class SurveyPartyController {
     description: 'Invalid association ID format',
   })
   async findOne(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: string
   ): Promise<ResponseDto<SurveyParty>> {
     const surveyParty = await this.surveyPartyService.findOne(id);
     return ResponseDto.success(
@@ -262,7 +262,7 @@ export class SurveyPartyController {
     description: 'Authentication required',
   })
   async remove(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: string
   ): Promise<ResponseDto<null>> {
     await this.surveyPartyService.remove(id);
     return ResponseDto.deleted('Survey-Party association deleted successfully');

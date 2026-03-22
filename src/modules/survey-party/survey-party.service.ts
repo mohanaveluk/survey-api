@@ -212,7 +212,7 @@ export class SurveyPartyService {
     }
   }
 
-  async findOne(id: number): Promise<SurveyParty> {
+  async findOne(id: string): Promise<SurveyParty> {
     try {
       const surveyParty = await this.surveyPartyRepository.findOne({
         where: { id },
@@ -236,7 +236,7 @@ export class SurveyPartyService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const surveyParty = await this.findOne(id);
       await this.surveyPartyRepository.remove(surveyParty);

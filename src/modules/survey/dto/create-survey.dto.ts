@@ -102,14 +102,6 @@ export class CreateSurveyDto {
   isAnonymous?: boolean;
 
   @ApiPropertyOptional({
-    example: 'user123',
-    description: 'ID of the user creating the survey',
-  })
-  @IsOptional()
-  @IsString()
-  creatorId?: string;
-
-  @ApiPropertyOptional({
     type: [String],
     example: ['party1', 'party2', 'party3'],
     description: 'Array of party IDs to associate with this survey',
