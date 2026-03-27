@@ -4,11 +4,20 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateContactDto {
   @ApiProperty({
     example: 'John Doe',
-    description: 'Full name of the contact',
+    description: 'first name of the contact',
   })
   @IsNotEmpty()
   @MinLength(3)
-  fullName: string;
+  firstName: string;
+
+  @ApiProperty({
+    example: 'Doe',
+    description: 'last name of the contact',
+  })
+  @IsNotEmpty()
+  @MinLength(3)
+  lastName: string;
+
 
   @ApiProperty({
     example: 'john.doe@example.com',
@@ -30,9 +39,9 @@ export class CreateContactDto {
     description: 'US mobile number with country code',
   })
   @IsNotEmpty()
-  @Matches(/^\+1[0-9]{10}$/, {
-    message: 'Mobile number must be in format: +1XXXXXXXXXX (10 digits after country code)'
-  })
+  // @Matches(/^\+[0-9][7,14]{10}$/, {
+  //   message: 'Mobile number must be in format: +1XXXXXXXXXX (10 digits after country code)'
+  // })
   mobile: string;
 
   @ApiProperty({

@@ -87,7 +87,13 @@ export class PartyController {
     @ApiQuery({
         name: 'search',
         required: false,
-        description: 'Search parties by name (case-insensitive partial match)',
+        description: 'Search parties by name (case-insensitive partial match)'
+        
+    })
+    @ApiQuery({
+        name: 'userId',
+        required: false,
+        description: 'ID of the user who created the parties',
     })
     @ApiResponse({
         status: HttpStatus.OK,
@@ -99,11 +105,12 @@ export class PartyController {
         description: 'Failed to retrieve parties',
     })
     async findAll(
-        @Query('search') search?: string
+        @Query('search') search?: string,
+        @Query('userId') userId?: string
     ): Promise<ResponseDto<PartyMaster[]>> {
         const parties = search
             ? await this.partyService.findByName(search)
-            : await this.partyService.findAll();
+            : await this.partyService.findAll(userId);
 
         const message = search
             ? `Found ${parties.length} parties matching '${search}'`

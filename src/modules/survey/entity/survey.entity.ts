@@ -21,7 +21,7 @@ export class Survey {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ name: 'created_by', nullable: true })
+  @Column({ name: 'created_by', nullable: true, type: 'uuid' })
   createdBy: string;
 
   @Column({ name: 'created_at', type: 'datetime', nullable: true })
@@ -57,6 +57,6 @@ export class Survey {
   votes: Vote[];
 
   @ManyToOne(() => User, (user) => user.surveys)
-  @JoinColumn({ name: 'created_by' })
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'uguid' })
   creator: User;  
 }

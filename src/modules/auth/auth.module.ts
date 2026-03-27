@@ -23,12 +23,14 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AuthorizationGuard } from 'src/common/guards/jwt-authorization.guard';
 import { LogModule } from '../logger/log.module';
 import { CustomLoggerService } from '../logger/custom-logger.service';
+import { CloudStorageService } from 'src/common/services/cloud-storage.service';
+import { PasswordResetToken } from './entity/password-reset-token.entity';
 
 dotenv.config();
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken, PasswordArchive, RoleEntity, OTC, UserLoginHistory]),
+    TypeOrmModule.forFeature([User, RefreshToken, PasswordArchive, RoleEntity, OTC, PasswordResetToken, UserLoginHistory]),
     PassportModule.register({ defaultStrategy: 'jwt' ,
       session: false}),
     
@@ -64,6 +66,7 @@ dotenv.config();
     DateService,
     TokenService,
     StorageService,
+    CloudStorageService,
     EmailService,
     CommonService,
     //UsersService,

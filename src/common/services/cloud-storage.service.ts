@@ -10,8 +10,8 @@ export class CloudStorageService {
   constructor() {
     // Initialize Google Cloud Storage
     this.storage = new Storage({
-      projectId: 'starinvoice', //process.env.GOOGLE_CLOUD_PROJECT_ID,
-      keyFilename: './starinvoice-survey-3da387d831dc.json' //process.env.GOOGLE_CLOUD_KEY_FILE, // Path to service account key file
+      keyFilename: './starinvoice-bbd29bfc351a.json',
+      projectId: "starinvoice"
     });
     this.bucketName =
       process.env.GOOGLE_CLOUD_STORAGE_BUCKET || 'inv-images';
@@ -34,7 +34,7 @@ export class CloudStorageService {
         metadata: {
           contentType: file.mimetype,
         },
-        public: true,
+        //public: true,
         validation: 'md5',
       });
 
@@ -46,7 +46,7 @@ export class CloudStorageService {
         stream.on('finish', async () => {
           try {
             // Make the file public
-            await fileUpload.makePublic();
+            //await fileUpload.makePublic();
 
             // Return the public URL
             const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${fileName}`;

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, InternalServerErrorException, HttpException, GoneException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -22,14 +22,17 @@ import { UpdateProfileDto } from '../user/dto/update-profile.dto';
 import { VerifyEmailDto } from '../user/dto/verify-email.dto';
 import { UserResponseDto } from '../user/dto/user-response.dto';
 import { LoginDto } from './dto/login.dto';
-import { UpdatePasswordDto } from '../user/dto/update-password.dto';
+import { UpdatePasswordOldDto } from '../user/dto/update-password.dto';
 import { ValidateOTCDto } from '../user/dto/validate-otc.dto';
 import { MobileLoginDto } from './dto/mobile-login.dto';
 import { passwordResetTemplate } from 'src/shared/email/templates/password-reset.template';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
-import { ResendOTCDto } from '../user/dto/resend-otc.dto';
+import { ResendEmailDto, ResendOTCDto } from '../user/dto/resend-otc.dto';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { CustomLoggerService } from '../logger/custom-logger.service';
+import { CloudStorageService } from 'src/common/services/cloud-storage.service';
+import { PasswordResetToken } from './entity/password-reset-token.entity';
+import { buildOtpEmailHtml } from 'src/shared/email/templates/otc-email-templates';
 
 
 
@@ -44,17 +47,21 @@ export class AuthService {
     private rolesRepository: Repository<RoleEntity>,   
     @InjectRepository(OTC)
     private otcRepository: Repository<OTC>, 
+    @InjectRepository(PasswordResetToken)
+    private readonly tokenRepo: Repository<PasswordResetToken>,    
+
     private jwtService: JwtService,
     private dateService: DateService,
     private tokenService: TokenService,
     private storageService: StorageService,
+    private cloudStorageService: CloudStorageService,
     private emailService: EmailService,
     private commonService: CommonService,
     private userLoginHistoryService: UserLoginHistoryService,
     private logger: CustomLoggerService
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, domain: string) : Promise<{ message: string }> {
     try {
 
       const existingUser = await this.userRepository.findOne({
@@ -79,7 +86,7 @@ export class AuthService {
 
       const hashedPassword = await bcrypt.hash(registerDto.password, 10);
       const verificationCode = this.generateOTC();
-      const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      const verificationCodeExpiry = new Date(Date.now() + 30 * 60 * 1000); // 15 minutes
 
       if(unverifiedUser){
         // Update user properties
@@ -113,7 +120,7 @@ export class AuthService {
       await this.emailService.sendEmail({
         to: user.email,
         subject: 'Verify Your Email Address',
-        html: verifyEmailTemplate(verificationCode),
+        html: verifyEmailTemplate(verificationCode, user.uguid, user.first_name, domain),
       });
       this.logger.debug('Email has been sent');
 
@@ -161,17 +168,23 @@ export class AuthService {
   }
 
   
-  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+  async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({
-      where: { email: verifyEmailDto.email }
+      where: { uguid: verifyEmailDto.userGuid }
     });
 
     if (!user) {
-      throw new BadRequestException('Invalid email address');
+      throw new BadRequestException('Invalid verification link');
     }
 
     if (user.is_email_verified) {
       return { message: 'Email already verified' };
+    }
+
+    // check if the updatedat or createdAt os greater than 15 mins then return expired code message
+    const referenceTime = user.verification_code_expiry;
+    if (referenceTime < new Date()) {
+      throw new HttpException('Verification code has expired. Please request a new verification mail.', 410);
     }
 
     if (!user.verification_code || 
@@ -184,6 +197,7 @@ export class AuthService {
     user.verification_code = null;
     user.verification_code_expiry = null;
     user.is_active = 1;
+    user.updated_at = new Date();
     await this.userRepository.save(user);
 
     return { message: 'Email verified successfully' };
@@ -227,17 +241,19 @@ export class AuthService {
       // Generate new verification code if needed
       if (!user.verification_code || new Date() > user.verification_code_expiry) {
         const verificationCode = this.generateOTC();
-        const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+        const verificationCodeExpiry = new Date(Date.now() + 30 * 60 * 1000);
 
         user.verification_code = verificationCode;
         user.verification_code_expiry = verificationCodeExpiry;
+        user.updated_at = new Date();
+        const domain = `${req.protocol}://${req.get('host')}`;
         await this.userRepository.save(user);
 
         // Send verification email
         await this.emailService.sendEmail({
           to: user.email,
           subject: 'Verify Your Email Address',
-          html: verifyEmailTemplate(verificationCode),
+          html: verifyEmailTemplate(verificationCode, user.uguid, user.first_name, domain),
         });
       }
 
@@ -283,7 +299,7 @@ export class AuthService {
 
   }
 
-  async updatePassword(userGuId: string, updatePasswordDto: UpdatePasswordDto) {
+  async updatePassword_old(userGuId: string, updatePasswordDto: UpdatePasswordOldDto) {
     const user = await this.userRepository.findOne({
       where: { uguid: userGuId },
     });
@@ -347,7 +363,8 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      const imageUrl = await this.storageService.uploadFile(file);
+      //const imageUrl = await this.storageService.uploadFile(file);
+      const imageUrl = await this.cloudStorageService.uploadFile(file);
       
       user.profile_image = imageUrl;
       user.updated_at = new Date();
@@ -550,7 +567,7 @@ export class AuthService {
       await this.emailService.sendEmail({
         to: user.email,
         subject: 'Verify Your Email Address',
-        html: verifyEmailTemplate(verificationCode),
+        html: verifyEmailTemplate(verificationCode, user.uguid, user.first_name, "domain"),
       });
 
       return { message: 'The verification code has been sent again. Please check your email for verification code' };
@@ -559,6 +576,145 @@ export class AuthService {
       throw error;
     }
   }
+
+  async resendVerificationMail(resendEmailDto: ResendEmailDto, domain: string): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { uguid: resendEmailDto.userGuid },
+      });
+
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const verificationCode = this.generateOTC();
+      const verificationCodeExpiry = new Date(Date.now() + 30 * 60 * 1000);
+      user.verification_code = verificationCode;
+      user.verification_code_expiry = verificationCodeExpiry;
+      user.updated_at = new Date();
+      
+      await this.userRepository.save(user);
+      // Send verification email
+      
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Verify Your Email Address',
+        html: verifyEmailTemplate(verificationCode, user.uguid, user.first_name, domain),
+      });
+      
+      return { message: 'Verification email sent successfully. Please check your email for verification code' };
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ── STEP 1: Forgot password — generate and email OTP ─────────────────────
+  async forgotPassword(email: string): Promise<void> {
+    // Look up the user — but DON'T throw if not found (prevents enumeration)
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) return; // silently return — frontend sees the same 200 either way
+ 
+    // Invalidate any existing unused tokens for this email
+    await this.tokenRepo.delete({ email, used: false });
+ 
+    // Generate a cryptographically-safe 6-digit OTP
+    const otp = this.generateOTC();
+ 
+    // Hash the OTP before storing (treat like a password)
+    const otpHash = await bcrypt.hash(otp, 10);
+ 
+    // Save the token record with a 5-minute expiry
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    await this.tokenRepo.save(
+      this.tokenRepo.create({
+        email,
+        otpHash,
+        resetToken: null,   // populated in step 2 after OTP verified
+        expiresAt,
+        used: false,
+      }),
+    );
+ 
+    // Send OTP email
+    await this.emailService.sendEmail({
+      to:      email,
+      subject: 'Your password reset code',
+      html:    buildOtpEmailHtml(otp, user.first_name ?? 'there'),
+    });
+  }
+
+
+// ── STEP 2: Verify OTP — return a short-lived reset token ────────────────
+ 
+  async verifyResetCode(email: string, code: string): Promise<string> {
+    const record = await this.tokenRepo.findOne({
+      where: { email, used: false },
+      order: { createdAt: 'DESC' }, // use the most recent one
+    });
+ 
+    // No record found
+    if (!record) {
+      throw new BadRequestException('Invalid or expired verification code.');
+    }
+ 
+    // Check expiry
+    if (record.expiresAt < new Date()) {
+      throw new GoneException('Verification code has expired. Please request a new one.');
+    }
+ 
+    // Verify OTP against stored hash
+    const isMatch = await bcrypt.compare(code, record.otpHash);
+    if (!isMatch) {
+      throw new BadRequestException('Incorrect verification code. Please try again.');
+    }
+ 
+    // OTP is valid — generate a reset token (UUID) valid for 10 minutes
+    const resetToken  = uuidv4();
+    const resetExpiry = new Date(Date.now() + 10 * 60 * 1000);
+ 
+    // Persist the reset token on the same record
+    record.resetToken = resetToken;
+    record.expiresAt  = resetExpiry;
+    await this.tokenRepo.save(record);
+ 
+    return resetToken;
+  }
+ 
+  // ── STEP 3: Update password ───────────────────────────────────────────────
+ 
+  async updatePassword(
+    email:       string,
+    resetToken:  string,
+    newPassword: string,
+  ): Promise<void> {
+    const record = await this.tokenRepo.findOne({
+      where: { email, resetToken, used: false },
+    });
+ 
+    if (!record) {
+      throw new BadRequestException('Invalid or expired reset token.');
+    }
+ 
+    if (record.expiresAt < new Date()) {
+      throw new GoneException('Reset token has expired. Please restart the reset process.');
+    }
+ 
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+ 
+    // Hash the new password
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+ 
+    // Update the user record
+    await this.userRepository.update(user.id, { password: passwordHash });
+ 
+    // Mark the token as used so it cannot be replayed
+    record.used = true;
+    await this.tokenRepo.save(record);
+  }  
 
   /*async getUserPermissions(userId: string): Promise<Permission[]> {
     try {
