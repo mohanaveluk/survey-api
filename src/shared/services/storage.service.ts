@@ -10,11 +10,9 @@ export class StorageService {
 
   constructor(private configService: ConfigService) {
     
-
-
-    this.storage1 = new Storage({
-        keyFilename: './healthcare-apps-446704-4844b2491c96.json',
-        projectId: "healthcare-apps-446704"
+    this.storage = new Storage({
+        keyFilename: './starinvoice-survey-3da387d831dc.json',
+        projectId: "starinvoice"
     });
     this.bucket = this.configService.get('GOOGLE_CLOUD_BUCKET');
   }
@@ -35,7 +33,7 @@ export class StorageService {
     //const prkey = `-----BEGIN PRIVATE KEY-----\n${decrypted}\n-----END PRIVATE KEY-----\n`
     //console.log(decrypted);
 
-    this.storage = new Storage({
+    this.storage1 = new Storage({
       projectId: this.configService.get('GOOGLE_CLOUD_PROJECT_ID'),
       credentials: {
         client_email: this.configService.get('GOOGLE_CLOUD_CLIENT_EMAIL'),

@@ -5,8 +5,11 @@ export class Contact {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text',{name: 'full_name'})
-  fullName: string;
+  @Column('text',{name: 'first_name'})
+  firstName: string;
+
+  @Column('text',{name: 'last_name'})
+  lastName: string;
 
   @Column()
   email: string;

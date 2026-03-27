@@ -11,6 +11,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { waitForDatabase } from './shared/utils/database.util';
 import { getDatabaseConfig } from './config/configuration';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path/win32';
 require('dotenv').config();
 
 
@@ -18,7 +20,13 @@ async function bootstrap() {
       // Wait for database to be available
   await waitForDatabase(getDatabaseConfig());
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Serve everything under /src/assets as /static
+  app.useStaticAssets(join(__dirname, '..', 'src', 'assets'), {
+    prefix: '/static',
+  });
+    
   const server = app.getHttpServer() as http.Server;
   // Set global prefix for all routes
   app.setGlobalPrefix('api/v1');
@@ -75,6 +83,8 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api-docs', app, document);
   }
+  
+
   
   await app.listen(process.env.PORT ?? 3000);
 }

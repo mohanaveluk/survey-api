@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryColumn, OneToMany, BeforeInsert } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm';
 import { SurveyParty } from '../../survey-party/entity/survey-party.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { User } from 'src/modules/user/entity/user.entity';
 
 @Entity('party')
 export class PartyMaster {
@@ -25,6 +26,16 @@ export class PartyMaster {
   @Column({ nullable: true })
   logo_url: string;
 
+  @Column({ name: 'created_by', length: 36, nullable: true })
+  createdBy: string;
+
+  @Column({ name: 'created_at', type: 'datetime', nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
   @OneToMany(() => SurveyParty, sp => sp.party)
   surveys: SurveyParty[];
+
+  @ManyToOne(() => User, (user) => user.parties)
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'uguid' })
+  creator: User;  
 }

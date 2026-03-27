@@ -6,6 +6,7 @@ import { CreateContactDto } from './dto/create-contact.dto';
 import { EmailService } from 'src/shared/email/email.service';
 import { CustomLoggerService } from '../logger/custom-logger.service';
 import { contactAdminTemplate } from 'src/shared/email/templates/contact-admin.template';
+import { contactAdminNotificationTemplate, contactThankYouTemplate } from 'src/shared/email/templates/contact-email.template';
 
 @Injectable()
 export class ContactService {
@@ -24,13 +25,26 @@ export class ContactService {
 
     this.logger.debug('Sending email...');
     // Send email notification to admin
-    await this.emailService.sendEmail({
-      to: process.env.ADMIN_EMAIL,
-      subject: 'New Contact Form Submission',
-      html: contactAdminTemplate(createContactDto),
-    });
-    this.logger.debug('Email has been sent');
-    
+    try {
+
+      await this.emailService.sendEmail({
+        to:      createContactDto.email,
+        subject: 'We received your message – Ayala Web',
+        html:    contactThankYouTemplate(createContactDto),
+      });
+      this.logger.log('Thank you email has been sent');
+
+      await this.emailService.sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: `[Contact Us] New message from ${createContactDto.firstName} ${createContactDto.lastName} – ${createContactDto.subject}`,
+        html: contactAdminNotificationTemplate(createContactDto),
+      });
+
+      this.logger.log(`Admin notification sent to ${process.env.ADMIN_EMAIL}`);
+    } catch (err) {
+      this.logger.error('Failed to send admin notification email', err);
+    }
+
     return {
       message: 'Your message has been sent successfully',
       contact,

@@ -7,10 +7,14 @@ import { Vote } from './entity/vote.entity';
 import { Survey } from '../survey/entity/survey.entity';
 import { PartyController } from '../party/party.controller';
 import { PartyMaster } from '../party/entity/party.entity';
+import { TempVote } from './entity/temp-vote.entity';
+import { EmailService } from 'src/shared/email/email.service';
+import { CustomLoggerService } from '../logger/custom-logger.service';
+import { Log } from '../logger/entity/log.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Vote, Survey, PartyMaster])],
+  imports: [TypeOrmModule.forFeature([Log, Vote, TempVote, Survey, PartyMaster])],
   controllers: [VoteController],
-  providers: [VoteService],
+  providers: [VoteService, EmailService, CustomLoggerService],
 })
 export class VoteModule {}

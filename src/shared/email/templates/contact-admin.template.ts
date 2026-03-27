@@ -1,5 +1,6 @@
 export const contactAdminTemplate = (data: {
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     mobile: string;
     subject: string;
@@ -11,7 +12,7 @@ export const contactAdminTemplate = (data: {
     <h2>New Contact Form Submission</h2>
     <p>A new contact form has been submitted with the following details:</p>
     <ul>
-      <li><strong>Name:</strong> ${data.fullName}</li>
+      <li><strong>Name:</strong> ${data.firstName}</li>
       <li><strong>Email:</strong> ${data.email}</li>
       <li><strong>Mobile:</strong> ${data.mobile}</li>
     </ul>

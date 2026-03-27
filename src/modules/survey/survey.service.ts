@@ -200,7 +200,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       }
 
       return await this.surveyRepository.find({
-        where: { createdBy: user.id.toString() },
+        where: { createdBy: user.uguid },
         relations: ['surveyParties', 'surveyParties.party', 'creator', 'votes'],
         order: { createdAt: 'DESC' },
       });

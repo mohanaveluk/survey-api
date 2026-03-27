@@ -44,4 +44,19 @@ export class CreatePartyDto {
     description: 'Party logo image file (JPEG, PNG, GIF, WebP - max 5MB)',
   })
   logo?: any; // This will be handled by multer  
+
+  @ApiPropertyOptional({
+    example: 'admin@system.com',
+    description: 'Email or ID of the user who created the survey',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  createdBy?: string;
+
+  @ApiPropertyOptional({ example: '2024-01-01T00:00:00Z', description: 'Creation timestamp of the party' })
+  @IsOptional()
+  @IsString()
+  createdAt?: Date;
+
 }

@@ -10,12 +10,15 @@ import { PartyMaster } from "./entity/party.entity";
 import { CloudStorageService } from '../../common/services/cloud-storage.service';
 import { CreatePartyDto } from './dto/create-party.dto';
 import { UpdatePartyDto } from './dto/update-party.dto';
+import { User } from '../user/entity/user.entity';
 @Injectable()
 export class PartyService {
     constructor(
         @InjectRepository(PartyMaster)
         private partyRepository: Repository<PartyMaster>,
-        private readonly cloudStorageService: CloudStorageService        
+        private readonly cloudStorageService: CloudStorageService,
+        @InjectRepository(User)
+        private userRepository: Repository<User>
     ) { }
 
     async create(
@@ -50,6 +53,8 @@ export class PartyService {
                 color: createPartyDto.color,
                 leader_name: createPartyDto.leader_name,
                 logo_url: logoUrl,
+                createdBy: createPartyDto.createdBy,
+                createdAt: createPartyDto.createdAt || new Date(),
             };
 
             const party = this.partyRepository.create(partyData);
@@ -70,9 +75,20 @@ export class PartyService {
         }
     }
 
-    async findAll(): Promise<PartyMaster[]> {
+    async findAll(userId: string): Promise<PartyMaster[]> {
         try {
+
+            //verify user exists in User table before fetching parties
+            const user = await this.userRepository.findOne({
+                where: { uguid: userId }
+            });
+
+            if (!user) {
+                throw new NotFoundException(`User with ID '${userId}' not found`);
+            }
+
             return await this.partyRepository.find({
+                where: { createdBy: userId },
                 relations: ['surveys'],
                 order: { name: 'ASC' },
             });

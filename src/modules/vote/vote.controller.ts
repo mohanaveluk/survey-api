@@ -9,6 +9,7 @@ import {
   HttpStatus,
   UseGuards,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,12 +20,14 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
+import { Request as ExpRequest } from 'express';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Vote } from './entity/vote.entity';
 import { SurveyVoteSummaryDto } from './dto/vote-summary.dto';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { ResendCodeDto, TempVoteResponseDto, VerifyVoteDto } from './dto/verify-vote.dto';
 
 @ApiTags('Vote')
 @Controller('vote')
@@ -32,6 +35,92 @@ export class VoteController {
   constructor(private readonly voteService: VoteService) {}
 
   @Post('survey/:surveyId')
+  @ApiOperation({ 
+    summary: 'Create temporary vote',
+    description: 'Creates a temporary vote with verification code that needs to be confirmed'
+  })
+  @ApiBody({ type: CreateVoteDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Temporary vote created successfully with verification code',
+    type: ResponseDto<TempVoteResponseDto>
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Vote ID already exists or voter has already voted in this survey'
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Survey or Party not found'
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data or survey is not active'
+  })
+  async create(@Body() createVoteDto: CreateVoteDto, @Req() req: ExpRequest): Promise<ResponseDto<TempVoteResponseDto>> {
+    const domain = req.get('host');
+    const tempVote = await this.voteService.create(createVoteDto, domain);
+    return ResponseDto.created(tempVote, 'Temporary vote created successfully. Please verify with the 6-digit code.');
+  }
+  
+  @Post('verify')
+  @ApiOperation({ 
+    summary: 'Verify and confirm vote',
+    description: 'Verifies the 6-digit code and creates the final vote'
+  })
+  @ApiBody({ type: VerifyVoteDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Vote verified and created successfully',
+    type: ResponseDto<Vote>
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Invalid verification code or user detail not found'
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Verification code expired or invalid data'
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Voter has already voted in this survey'
+  })
+  async verifyVote(@Body() verifyVoteDto: VerifyVoteDto): Promise<ResponseDto<Vote>> {
+    const vote = await this.voteService.verifyVote(verifyVoteDto);
+    return ResponseDto.created(vote, 'Vote verified and created successfully');
+  }  
+  
+  @Post('resend')
+  @ApiOperation({ 
+    summary: 'Resend code to Create temporary vote',
+    description: 'Creates a temporary vote with verification code that needs to be confirmed'
+  })
+  @ApiBody({ type: CreateVoteDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Temporary vote created successfully with verification code',
+    type: ResponseDto<TempVoteResponseDto>
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Vote ID already exists or voter has already voted in this survey'
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Survey or Party not found'
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data or survey is not active'
+  })
+  async resend(@Body() resendCodeDto: ResendCodeDto, @Req() req: ExpRequest ): Promise<ResponseDto<TempVoteResponseDto>> {
+    const domain = req.get('origin');
+    const tempVote = await this.voteService.resendCode(resendCodeDto, domain);
+    return ResponseDto.created(tempVote, 'Resend code sent successfully. Please verify with the 6-digit code.');
+  }
+
+  @Post('survey_old/:surveyId')
   @ApiOperation({
     summary: 'Cast a vote',
     description: 'Creates a new vote for a survey and party',
@@ -55,14 +144,14 @@ export class VoteController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data or survey is not active',
   })
-  async create(
+  async create_old(
     @Param('surveyId') surveyId: string,
     @Body() createVoteDto: CreateVoteDto
   ): Promise<ResponseDto<Vote>> {
     if(createVoteDto.surveyId !== surveyId) {
       throw new BadRequestException('Invalid Survey code');
     }
-    const vote = await this.voteService.create(createVoteDto);
+    const vote = await this.voteService.create_old(createVoteDto);
     return ResponseDto.created(vote, 'Vote created successfully');
   }
 

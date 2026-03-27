@@ -15,7 +15,19 @@ export class VerifyEmailDto {
       message: 'Invalid email format. Example: user@example.com'
     }
   )
-  email: string;
+  email?: string;
+
+  @ApiProperty({
+    example: '123456',
+    description: 'user guid code'
+  })
+  @IsString({
+    message: 'User guid must be a string'
+  })
+  @Length(36, 36, {
+    message: 'User guid must be min 36 characters long'
+  })
+  userGuid: string;
 
   @ApiProperty({
     example: '123456',

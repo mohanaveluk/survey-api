@@ -15,7 +15,8 @@ import {
   HttpStatus,
   Patch,
   Param,
-  Req
+  Req,
+  HttpCode
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { Constants } from 'src/shared/constants/constants';
@@ -34,13 +35,14 @@ import { LoginDto } from './dto/login.dto';
 import { ValidateOTCDto } from '../user/dto/validate-otc.dto';
 import { MobileLoginDto } from './dto/mobile-login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { ResendOTCDto } from '../user/dto/resend-otc.dto';
-import { UpdatePasswordDto } from '../user/dto/update-password.dto';
+import { ResendEmailDto, ResendOTCDto } from '../user/dto/resend-otc.dto';
+import { UpdatePasswordOldDto } from '../user/dto/update-password.dto';
 import { RequestPasswordResetDto } from '../user/dto/request-password-reset.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { User } from '../user/entity/user.entity';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { ToggleUserStatusDto } from '../user/dto/toggle-user-status.dto';
+import { ForgotPasswordDto, UpdatePasswordDto, VerifyResetCodeDto } from './dto/forgot-password.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -72,9 +74,10 @@ export class AuthController {
     description: Constants.SWAGGER.INTERNAL_SERVER_ERROR,
     type: ApiErrorDto,
   })
-  async register(@Body() registerDto: RegisterDto) : Promise<ResponseDto<any>> {
+  async register(@Body() registerDto: RegisterDto, @Req() req: ExpRequest) : Promise<ResponseDto<any>> {
     try {
-      const result = await this.authService.register(registerDto);
+      const domain = `${req.get('origin')}`; 
+      const result = await this.authService.register(registerDto, domain);
       return new ResponseDto(true, 'User registered successfully', result, null);
     } catch (error) {
       throw new HttpException(
@@ -102,16 +105,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify email address' })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired verification code' })
-  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto): Promise<ResponseDto<any>> {
-    try {
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto): Promise<ResponseDto<any>> { 
       const result = await this.authService.verifyEmail(verifyEmailDto);
+      if(result.message === 'Email already verified') {
+        return new ResponseDto(true, result.message, null, null);
+      }
       return new ResponseDto(true, 'Email verified successfully', result, null);
-    } catch (error) {
-      throw new HttpException(
-        new ResponseDto(false, 'Email verification failed', null, error.message),
-        HttpStatus.BAD_REQUEST,
-      );
-    }
   }
 
 
@@ -203,15 +202,24 @@ export class AuthController {
     return this.authService.resendVerificationCode(resendOTCDto);
   }
 
+  @Post('resend-verification-mail')
+  @ApiOperation({ summary: 'Send verification email' })
+  @ApiResponse({ status: 200, description: 'Verification email sent successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - invalid token' })
+  async resendVerificationMail(@Body() resendEmailDto: ResendEmailDto, @Req() req: ExpRequest) {
+    const domain = `${req.get('origin')}`; 
+    return this.authService.resendVerificationMail(resendEmailDto, domain);
+  }
+
   
-  @Post('update-password')
+  @Post('update-password_old')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update user password' })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized - invalid credentials' })
-  updatePassword(@Request() req, @Body() updatePasswordDto: UpdatePasswordDto) {
-    return this.authService.updatePassword(req.user.uguid, updatePasswordDto);
+  updatePassword_old(@Request() req, @Body() updatePasswordDto: UpdatePasswordOldDto) {
+    return this.authService.updatePassword_old(req.user.uguid, updatePasswordDto);
   }
 
   @Post('logout')
@@ -290,6 +298,51 @@ export class AuthController {
   // async getUserPermissions(@Request() req): Promise<Permission[]> {
   //   return this.authService.getUserPermissions(req.user.uguid);
   // }
+
+  // ── POST /auth/forgot-password ──────────────────────────────────────────
+  // Step 1: User submits their email.
+  // Backend generates a 6-digit OTP, stores it with a 5-minute TTL,
+  // and sends it to the user's inbox.
+  // Always returns 200 regardless of whether the email exists
+  // (prevents user enumeration attacks).
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.forgotPassword(dto.email);
+    return { message: 'If this email is registered, a reset code has been sent.' };
+  }
+ 
+  // ── POST /auth/verify-reset-code ────────────────────────────────────────
+  // Step 2: User submits the 6-digit OTP received by email.
+  // Returns a short-lived resetToken if the code is valid.
+  // The frontend stores this token and passes it in step 3.
+  @Post('verify-reset-code')
+  @HttpCode(HttpStatus.OK)
+  async verifyResetCode(
+    @Body() dto: VerifyResetCodeDto,
+  ): Promise<{ data: { resetToken: string } }> {
+    const resetToken = await this.authService.verifyResetCode(dto.email, dto.code);
+    return { data: { resetToken } };
+  }
+ 
+  // ── POST /auth/update-password ──────────────────────────────────────────
+  // Step 3: User submits email + resetToken + new password.
+  // Backend validates the token, hashes the new password,
+  // updates the user record, and invalidates the token.
+  @Post('update-password')
+  @HttpCode(HttpStatus.OK)
+  async updatePassword(
+    @Body() dto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.updatePassword(
+      dto.email,
+      dto.resetToken,
+      dto.password,
+    );
+    return { message: 'Password updated successfully.' };
+  }
 
 
   @Get("roles")
