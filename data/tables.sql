@@ -1,3 +1,4 @@
+use survey;
 /*
 drop table if exists user_login_history;
 drop table if exists votes;
@@ -17,7 +18,8 @@ drop table if exists user;
 
 CREATE TABLE `contact_tbl` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `full_name` text NOT NULL,
+  `first_name` text NOT NULL,
+  `last_name` text NOT NULL,
   `email` varchar(255) NOT NULL,
   `mobile` varchar(255) DEFAULT NULL,
   `message` text NOT NULL,
@@ -150,13 +152,14 @@ CREATE TABLE `surveys` (
   `is_active` tinyint NOT NULL DEFAULT '1',
   `total_votes` int NOT NULL DEFAULT '0',
   `status` enum('draft','published','closed') NOT NULL DEFAULT 'draft',
-  `startDate` datetime DEFAULT NULL,
-  `endDate` datetime DEFAULT NULL,
-  `isAnonymous` tinyint NOT NULL DEFAULT '1',
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `is_anonymous` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `FK_09b6e7ba4d0af3e2af75b740082` (`creatorId`),
-  CONSTRAINT `FK_09b6e7ba4d0af3e2af75b740082` FOREIGN KEY (`creatorId`) REFERENCES `user` (`id`)
+  KEY `FK_b395d649c64d92997cb33f4d572` (`created_by`),
+  CONSTRAINT `FK_b395d649c64d92997cb33f4d572` FOREIGN KEY (`created_by`) REFERENCES `user` (`uguid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `survey_parties` (
   `id` varchar(255) NOT NULL,
