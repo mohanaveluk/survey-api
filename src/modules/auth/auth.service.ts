@@ -61,7 +61,7 @@ export class AuthService {
     private logger: CustomLoggerService
   ) {}
 
-  async register(registerDto: RegisterDto, domain: string) : Promise<{ message: string }> {
+  async register(registerDto: RegisterDto, domain: string) : Promise<{ detail: any, message: string }> {
     try {
 
       const existingUser = await this.userRepository.findOne({
@@ -125,7 +125,7 @@ export class AuthService {
       this.logger.debug('Email has been sent');
 
       //await this.userRepository.save(user);
-      return { message: 'User registered successfully. Please check your email for verification code.' };
+      return { detail: savedUser, message: 'User registered successfully. Please check your email for verification code.' };
     } catch (err) {
       throw err;
     }

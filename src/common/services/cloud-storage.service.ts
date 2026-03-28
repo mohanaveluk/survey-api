@@ -9,12 +9,16 @@ export class CloudStorageService {
 
   constructor() {
     // Initialize Google Cloud Storage
-    this.storage = new Storage({
-      keyFilename: './starinvoice-bbd29bfc351a.json',
-      projectId: "starinvoice"
-    });
-    this.bucketName =
-      process.env.GOOGLE_CLOUD_STORAGE_BUCKET || 'inv-images';
+    if (process.env.NODE_ENV === "development") {
+      this.storage = new Storage({
+        keyFilename: './starinvoice-bbd29bfc351a.json',
+        projectId: "starinvoice"
+      });
+    }
+    else {
+      this.storage = new Storage();
+    }
+    this.bucketName = process.env.GCP_BUCKET || 'inv-images';
   }
 
   async uploadFile(

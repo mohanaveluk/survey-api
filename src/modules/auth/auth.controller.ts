@@ -78,7 +78,7 @@ export class AuthController {
     try {
       const domain = `${req.get('origin')}`; 
       const result = await this.authService.register(registerDto, domain);
-      return new ResponseDto(true, 'User registered successfully', result, null);
+      return new ResponseDto(true, 'User registered successfully', result.detail, null);
     } catch (error) {
       throw new HttpException(
         new ResponseDto(false, error.message, null, `Failed to register user - ${error.message}`),
