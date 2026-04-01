@@ -60,8 +60,8 @@ export class RegisterDto {
   mobile: string;
 
   @ApiProperty({
-    example: 'Computer Science',
-    description: 'User major/field of study',
+    example: 'ABC Chennal',
+    description: 'User organisation name',
   })
   //@IsNotEmpty()
   major: string;

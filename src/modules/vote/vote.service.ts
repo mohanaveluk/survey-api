@@ -1,11 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 import { Vote } from "./entity/vote.entity";
 import { PartyMaster } from "../party/entity/party.entity";
 import { Survey, SurveyStatus } from "../survey/entity/survey.entity";
 import { CreateVoteDto } from "./dto/create-vote.dto";
-import { SurveyVoteSummaryDto, VoteSummaryDto } from "./dto/vote-summary.dto";
+import { SurveyStatisticsDto, SurveyVoteSummaryDto, VoteSummaryDto } from "./dto/vote-summary.dto";
 import { TempVote } from "./entity/temp-vote.entity";
 import { ResendCodeDto, TempVoteResponseDto, VerifyVoteDto } from "./dto/verify-vote.dto";
 import { CustomLoggerService } from "../logger/custom-logger.service";
@@ -614,4 +614,86 @@ export class VoteService {
     }
   }
 
+  // ── Full statistics for a survey ─────────────────────────────────────────
+ 
+  async getSurveyStatistics(
+    surveyId: string,
+    requestingUserId: string,
+  ): Promise<SurveyStatisticsDto> {
+ 
+    // 1. Load the survey and verify ownership
+    const survey = await this.surveyRepository.findOne({
+      where:     { id: surveyId },
+      relations: ['surveyParties', 'surveyParties.party', 'creator'],
+    });
+ 
+    if (!survey) {
+      throw new NotFoundException(`Survey ${surveyId} not found.`);
+    }
+ 
+    if (survey.createdBy !== requestingUserId) {
+      throw new ForbiddenException('You do not have access to this survey.');
+    }
+ 
+    // 2. Load all votes for this survey (with gender and partyId)
+    const votes = await this.voteRepository.find({
+      where:     { survey: { id: surveyId } },
+      relations: ['party'],
+    });
+ 
+    const totalVotes = votes.length;
+ 
+    // 3. Aggregate votesByParty
+    const votesByParty: Record<string, number> = {};
+    survey.surveyParties.forEach(sp => {
+      votesByParty[sp.party.id] = 0;
+    });
+    votes.forEach(v => {
+      if (v.party?.id) {
+        votesByParty[v.party.id] = (votesByParty[v.party.id] || 0) + 1;
+      }
+    });
+ 
+    // 4. Aggregate votesByGender (total)
+    const votesByGender = { male: 0, female: 0, other: 0 };
+    votes.forEach(v => {
+      const g = (v.gender ?? 'other').toLowerCase();
+      if (g === 'male')        votesByGender.male++;
+      else if (g === 'female') votesByGender.female++;
+      else                     votesByGender.other++;
+    });
+ 
+    // 5. Aggregate genderByParty  { partyId: { male, female, other } }
+    const genderByParty: Record<string, { male: number; female: number; other: number }> = {};
+    survey.surveyParties.forEach(sp => {
+      genderByParty[sp.party.id] = { male: 0, female: 0, other: 0 };
+    });
+    votes.forEach(v => {
+      if (!v.party?.id) return;
+      const bucket = genderByParty[v.party.id];
+      if (!bucket) return;
+      const g = (v.gender ?? 'other').toLowerCase();
+      if (g === 'male')        bucket.male++;
+      else if (g === 'female') bucket.female++;
+      else                     bucket.other++;
+    });
+ 
+    // 6. Participation rate
+    //    If the survey has a registeredVoters field use it,
+    //    otherwise default to totalVotes (100 %)
+    const registeredVoters: number = (survey as any).registeredVoters ?? totalVotes;
+    const participationRate =
+      registeredVoters > 0
+        ? Math.round((totalVotes / registeredVoters) * 100)
+        : 0;
+ 
+    return {
+      surveyId,
+      totalVotes,
+      participationRate,
+      votesByParty,
+      votesByGender,
+      genderByParty,
+    };
+  }
 }

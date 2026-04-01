@@ -11,7 +11,7 @@ export class CloudStorageService {
     // Initialize Google Cloud Storage
     if (process.env.NODE_ENV === "development") {
       this.storage = new Storage({
-        keyFilename: './starinvoice-bbd29bfc351a.json',
+        keyFilename: './starinvoice-2654b9cffc1d.json',
         projectId: "starinvoice"
       });
     }
