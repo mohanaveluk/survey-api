@@ -11,6 +11,9 @@ import {
     UseGuards,
     UseInterceptors,
     UploadedFile,
+    ParseFilePipe,
+    MaxFileSizeValidator,
+    FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -29,6 +32,7 @@ import { CreatePartyDto } from './dto/create-party.dto';
 import { PartyMaster } from './entity/party.entity';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { UpdatePartyDto } from './dto/update-party.dto';
+import { maxFileSize } from 'src/shared/utils/file-validation.util';
 
 @ApiTags('Party')
 @Controller('party')
@@ -40,7 +44,8 @@ export class PartyController {
     @Post()
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth('JWT-auth')
-    @UseInterceptors(FileInterceptor('logo'))
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('file'))
     @ApiOperation({
         summary: 'Create a new party',
         description:
@@ -70,10 +75,17 @@ export class PartyController {
     })
     async create(
         @Body() createPartyDto: CreatePartyDto,
-        @UploadedFile() logoFile?: Express.Multer.File
+        @UploadedFile(
+              new ParseFilePipe({
+                validators: [
+                  new MaxFileSizeValidator({ maxSize: maxFileSize }),
+                  new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+                ],
+              }),
+            ) file?: Express.Multer.File        
     ): Promise<ResponseDto<PartyMaster>> {
-        const party = await this.partyService.create(createPartyDto, logoFile);
-        const message = logoFile
+        const party = await this.partyService.create(createPartyDto, file);
+        const message = file
             ? 'Party created successfully with logo uploaded'
             : 'Party created successfully';
         return ResponseDto.created(party, message);
@@ -150,7 +162,6 @@ export class PartyController {
 
     @Patch(':id')
     @UseGuards(JwtAuthGuard)
-    @UseInterceptors(FileInterceptor('logo'))
     @ApiBearerAuth('JWT-auth')
     @ApiOperation({
         summary: 'Update party',
@@ -187,13 +198,22 @@ export class PartyController {
         status: HttpStatus.UNAUTHORIZED,
         description: 'Authentication required',
     })
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('file'))
     async update(
         @Param('id') id: string,
         @Body() updatePartyDto: UpdatePartyDto,
-        @UploadedFile() logoFile?: Express.Multer.File
+        @UploadedFile(
+              new ParseFilePipe({
+                validators: [
+                  new MaxFileSizeValidator({ maxSize: maxFileSize }),
+                  new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+                ],
+              }),
+            ) file?: Express.Multer.File
     ): Promise<ResponseDto<PartyMaster>> {
-        const party = await this.partyService.update(id, updatePartyDto, logoFile);
-        const message = logoFile
+        const party = await this.partyService.update(id, updatePartyDto, file);
+        const message = file
             ? 'Party updated successfully with logo uploaded'
             : 'Party updated successfully';
         return ResponseDto.updated(party, message);

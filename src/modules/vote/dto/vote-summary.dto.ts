@@ -118,3 +118,22 @@ export class SurveyVoteSummaryDto {
   })
   lastVoteDate: Date;
 }
+
+export class SurveyStatisticsDto {
+  surveyId:          string;
+  totalVotes:        number;
+  participationRate: number;
+ 
+  /** { partyId: voteCount } */
+  votesByParty: Record<string, number>;
+ 
+  /** Totals by gender across ALL parties */
+  votesByGender: {
+    male:   number;
+    female: number;
+    other:  number;
+  };
+ 
+  /** { partyId: { male, female, other } } */
+  genderByParty: Record<string, { male: number; female: number; other: number }>;
+}

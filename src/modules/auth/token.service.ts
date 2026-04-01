@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { RefreshToken } from '../user/entity/refresh-token.entity';
 import { User } from '../user/entity/user.entity';
+import { identity } from 'rxjs';
 
 
 @Injectable()
@@ -43,6 +44,7 @@ export class TokenService {
         lastName: user.last_name,
         avatar: user.profile_image,
         username: user.first_name + ' ' + user.last_name,
+        identity: user.major || user.first_name + ' ' + user.last_name, // Use major or organisation_name as identity
       } 
     };
   }

@@ -10,6 +10,7 @@ import {
   UseGuards,
   BadRequestException,
   Req,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,7 +25,7 @@ import { Request as ExpRequest } from 'express';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Vote } from './entity/vote.entity';
-import { SurveyVoteSummaryDto } from './dto/vote-summary.dto';
+import { SurveyStatisticsDto, SurveyVoteSummaryDto } from './dto/vote-summary.dto';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { ResendCodeDto, TempVoteResponseDto, VerifyVoteDto } from './dto/verify-vote.dto';
@@ -386,5 +387,15 @@ export class VoteController {
   async remove(@Param('id') id: string): Promise<ResponseDto<null>> {
     await this.voteService.remove(id);
     return ResponseDto.deleted('Vote deleted successfully');
+  }
+
+  @Get(':id/statistics')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  async getStatistics(
+    @Param('id') surveyId: string,
+    @Request() req,
+  ): Promise<SurveyStatisticsDto> {
+    return this.voteService.getSurveyStatistics(surveyId, req.user.uguid);
   }
 }
