@@ -18,7 +18,23 @@ export class PublishSurveyDto {
   @IsOptional()
   @IsEnum(SurveyStatus)
   status?: SurveyStatus;
+
+  @ApiProperty({
+    type: String,
+    example: 'https://survey.surveyUrl',
+    description: 'The URL where the survey can be accessed',
+  })
+  surveyUrl: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'https://short.url/survey',
+    description: 'A shortened URL for the survey',
+  })
+  shortUrl: string;
 }
+
+
 
 
 export class UpdatePartyIdsDto {

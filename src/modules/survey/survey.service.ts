@@ -7,6 +7,8 @@ import { CreateSurveyDto } from "./dto/create-survey.dto";
 import { PublishSurveyDto, UpdateSurveyDto } from "./dto/update-survey.dto";
 import { SurveyParty } from "../survey-party/entity/survey-party.entity";
 import { PartyMaster } from "../party/entity/party.entity";
+import { surveyShareEmailTemplate } from "src/shared/email/templates/survey-email-template";
+import { EmailService } from "src/shared/email/email.service";
 
 @Injectable()
 export class SurveyService {
@@ -18,7 +20,8 @@ export class SurveyService {
     @InjectRepository(SurveyParty)
     private surveyPartyRepository: Repository<SurveyParty>,
     @InjectRepository(PartyMaster)
-    private partyRepository: Repository<PartyMaster>    
+    private partyRepository: Repository<PartyMaster>,
+    private emailService: EmailService,
 
   ) {}
 
@@ -402,13 +405,37 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
       }
 
       survey.status = newStatus;
+      survey.surveyUrl = publishDto?.surveyUrl || survey.surveyUrl;
+      survey.shortUrl = publishDto?.shortUrl || survey.shortUrl;
+
 
       // Set start date to now if not specified and publishing
       if (newStatus === SurveyStatus.PUBLISHED && !survey.startDate) {
         survey.startDate = new Date();
       }
 
-      return await this.surveyRepository.save(survey);
+      const updatedSurvey = await this.surveyRepository.save(survey);
+
+      const html = surveyShareEmailTemplate({
+        organizerName: survey.creator?.first_name + ' ' + survey.creator?.last_name || 'Unknown Organizer',
+        surveyTitle: survey.name,
+        mediaName: survey.creator?.major || survey.creator?.first_name || 'Unknown Media',
+        surveyUrl: "survey.surveyUrl",
+        shortUrl: publishDto?.surveyUrl || "survey.surveyUrl",
+        expiryDate: survey.endDate,
+        customMessage: "Thank you for your interest in our survey! We appreciate your participation and look forward to sharing the results with you soon."
+      });
+
+      await this.emailService.sendEmail({
+        to: user.email || '',
+        cc: 'gcpstudy0@gmail.com',
+        subject: `Your survey "${survey.name}" has been published!`,
+        html,
+      });
+
+
+      return await this.findOne(updatedSurvey.id);
+
     } catch (error) {
       if (
         error instanceof NotFoundException ||

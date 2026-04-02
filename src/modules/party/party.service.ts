@@ -23,9 +23,19 @@ export class PartyService {
 
     async create(
         createPartyDto: CreatePartyDto,
+        userInfo: any,
         logoFile?: Express.Multer.File
     ): Promise<PartyMaster> {
         try {
+            //verify user exists in User table before fetching parties
+            const user = await this.userRepository.findOne({
+                where: { uguid: userInfo.uguid },
+            });
+
+            if (!user) {
+                throw new NotFoundException(`User with ID '${createPartyDto.createdBy}' not found`);
+            }
+
             // Check if party with same name already exists
             const existingPartyByName = await this.partyRepository.findOne({
                 where: { name: createPartyDto.name },
@@ -53,7 +63,7 @@ export class PartyService {
                 color: createPartyDto.color,
                 leader_name: createPartyDto.leader_name,
                 logo_url: logoUrl,
-                createdBy: createPartyDto.createdBy,
+                createdBy: createPartyDto.createdBy || user.uguid,
                 createdAt: createPartyDto.createdAt || new Date(),
             };
 
@@ -120,9 +130,19 @@ export class PartyService {
     async update(
         id: string,
         updatePartyDto: UpdatePartyDto,
+        userInfo: any,
         logoFile?: Express.Multer.File
     ): Promise<PartyMaster> {
         try {
+
+            //verify user exists in User table before fetching parties
+            const user = await this.userRepository.findOne({
+                where: { uguid: userInfo.uguid },
+            }); 
+            if (!user) {
+                throw new NotFoundException(`User with ID '${userInfo.uguid}' not found`);
+            }
+
             const party = await this.findOne(id);
 
             // Check if updating name would create conflict

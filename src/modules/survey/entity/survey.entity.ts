@@ -49,6 +49,11 @@ export class Survey {
   @Column({ name: 'is_anonymous', default: true })
   isAnonymous: boolean;
 
+  @Column({ name: 'survey_url', nullable: true })
+  surveyUrl: string;
+  
+  @Column({ name: 'short_url', nullable: true })
+  shortUrl: string;
 
   @OneToMany(() => SurveyParty, sp => sp.survey)
   surveyParties: SurveyParty[];
