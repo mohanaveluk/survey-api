@@ -14,6 +14,7 @@ import {
     ParseFilePipe,
     MaxFileSizeValidator,
     FileTypeValidator,
+    Request,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -75,16 +76,18 @@ export class PartyController {
     })
     async create(
         @Body() createPartyDto: CreatePartyDto,
+        @Request() req,
         @UploadedFile(
               new ParseFilePipe({
                 validators: [
                   new MaxFileSizeValidator({ maxSize: maxFileSize }),
                   new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
                 ],
+                fileIsRequired: false,
               }),
-            ) file?: Express.Multer.File        
+            ) file?: Express.Multer.File,
     ): Promise<ResponseDto<PartyMaster>> {
-        const party = await this.partyService.create(createPartyDto, file);
+        const party = await this.partyService.create(createPartyDto, req.user, file );
         const message = file
             ? 'Party created successfully with logo uploaded'
             : 'Party created successfully';
@@ -172,7 +175,6 @@ export class PartyController {
         name: 'id',
         description: 'Unique identifier of the party to update',
     })
-    @ApiConsumes('multipart/form-data')
     @ApiBody({
         description: 'Updated party data with optional logo image',
         type: UpdatePartyDto,
@@ -203,16 +205,18 @@ export class PartyController {
     async update(
         @Param('id') id: string,
         @Body() updatePartyDto: UpdatePartyDto,
+        @Request() req,
         @UploadedFile(
               new ParseFilePipe({
                 validators: [
                   new MaxFileSizeValidator({ maxSize: maxFileSize }),
                   new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
                 ],
+                fileIsRequired: false,
               }),
             ) file?: Express.Multer.File
     ): Promise<ResponseDto<PartyMaster>> {
-        const party = await this.partyService.update(id, updatePartyDto, file);
+        const party = await this.partyService.update(id, updatePartyDto, req.user, file);
         const message = file
             ? 'Party updated successfully with logo uploaded'
             : 'Party updated successfully';
