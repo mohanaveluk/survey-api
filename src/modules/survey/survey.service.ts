@@ -420,8 +420,8 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
         organizerName: survey.creator?.first_name + ' ' + survey.creator?.last_name || 'Unknown Organizer',
         surveyTitle: survey.name,
         mediaName: survey.creator?.major || survey.creator?.first_name || 'Unknown Media',
-        surveyUrl: "survey.surveyUrl",
-        shortUrl: publishDto?.surveyUrl || "survey.surveyUrl",
+        surveyUrl: publishDto?.surveyUrl || survey.surveyUrl,
+        shortUrl: publishDto?.shortUrl || survey.surveyUrl,
         expiryDate: survey.endDate,
         customMessage: "Thank you for your interest in our survey! We appreciate your participation and look forward to sharing the results with you soon."
       });
