@@ -57,12 +57,16 @@ export class PartyService {
                     'party-logos'
                 );
             }
+            else if (createPartyDto.logo_url) {
+                logoUrl = createPartyDto.logo_url;
+            }
+            
 
             const partyData = {
                 name: createPartyDto.name,
                 color: createPartyDto.color,
                 leader_name: createPartyDto.leader_name,
-                logo_url: logoUrl,
+                logo_url: logoUrl || null,
                 createdBy: createPartyDto.createdBy || user.uguid,
                 createdAt: createPartyDto.createdAt || new Date(),
             };

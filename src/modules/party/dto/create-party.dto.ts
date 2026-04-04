@@ -45,6 +45,16 @@ export class CreatePartyDto {
   })
   logo?: any; // This will be handled by multer  
 
+
+  @ApiPropertyOptional({
+    type: String,
+    example: 'https://example.com/logo.png',
+    description: 'URL of the party logo if not uploading a file',
+  })
+  @IsOptional()
+  @IsString()
+  logo_url?: string; // Optional URL for the logo if not uploading a file
+
   @ApiPropertyOptional({
     example: 'admin@system.com',
     description: 'Email or ID of the user who created the survey',
