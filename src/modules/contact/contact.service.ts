@@ -29,7 +29,7 @@ export class ContactService {
 
       await this.emailService.sendEmail({
         to:      createContactDto.email,
-        subject: 'We received your message – Ayala Web',
+        subject: 'We received your message – Voter-Pulse',
         html:    contactThankYouTemplate(createContactDto),
       });
       this.logger.log('Thank you email has been sent');
