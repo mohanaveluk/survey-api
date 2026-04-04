@@ -25,6 +25,7 @@ import { PartyModule } from './modules/party/party.module';
 import { SurveyModule } from './modules/survey/survey.module';
 import { SurveyPartyModule } from './modules/survey-party/survey-party.module';
 import { VoteModule } from './modules/vote/vote.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 
 @Module({
@@ -52,7 +53,8 @@ import { VoteModule } from './modules/vote/vote.module';
     PartyModule,
     SurveyModule,
     SurveyPartyModule,
-    VoteModule
+    VoteModule,
+    ChatModule
   ],
   controllers: [
     UserController,
