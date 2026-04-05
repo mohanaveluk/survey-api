@@ -26,7 +26,7 @@ const SUBJECT_LABELS: Record<string, string> = {
 //  Usage:
 //    await mailService.send({
 //      to:      data.email,
-//      subject: 'We received your message – Ayala Web',
+//      subject: 'We received your message – Voter-Pulse',
 //      html:    contactThankYouTemplate(data),
 //    });
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ export const contactThankYouTemplate = (data: ContactFormData): string => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Thank you for contacting us – Ayala Web</title>
+  <title>Thank you for contacting us – Voter-Pulse</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f3ff;
              font-family:'Segoe UI',Arial,sans-serif;">
@@ -96,7 +96,7 @@ export const contactThankYouTemplate = (data: ContactFormData): string => {
               </p>
 
               <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.75;">
-                Thank you for reaching out to <strong style="color:#4f46e5;">Ayala Web</strong>.
+                Thank you for reaching out to <strong style="color:#4f46e5;">Voter-Pulse</strong>.
                 We have received your enquiry and one of our team members will be
                 in touch with you <strong>within 24 hours</strong>.
               </p>
@@ -200,7 +200,7 @@ export const contactThankYouTemplate = (data: ContactFormData): string => {
                        padding:24px 40px;text-align:center;">
               <p style="margin:0 0 6px;font-size:13px;color:#888;line-height:1.6;">
                 This email was sent by
-                <strong style="color:#4f46e5;">Ayala Web</strong>.
+                <strong style="color:#4f46e5;">Voter-Pulse</strong>.
                 Questions?
                 <a href="mailto:support@ayalaweb.com"
                    style="color:#4f46e5;text-decoration:none;font-weight:600;">
@@ -208,7 +208,7 @@ export const contactThankYouTemplate = (data: ContactFormData): string => {
                 </a>
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${year} Ayala Web. All rights reserved.
+                © ${year} Voter-Pulse. All rights reserved.
               </p>
             </td>
           </tr>
@@ -328,7 +328,7 @@ export const contactAdminNotificationTemplate = (data: ContactFormData): string 
 
               <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.65;">
                 A new contact form has been submitted on
-                <strong style="color:#4f46e5;">Ayala Web</strong>.
+                <strong style="color:#4f46e5;">Voter-Pulse</strong>.
                 Review the details below and respond to the user within 24 hours.
               </p>
 
@@ -377,7 +377,7 @@ export const contactAdminNotificationTemplate = (data: ContactFormData): string 
                      style="margin-top:28px;">
                 <tr>
                   <td align="center">
-                    <a href="mailto:${escapeHtml(data.email)}?subject=Re: ${encodeURIComponent(subjectLabel)} – Ayala Web"
+                    <a href="mailto:${escapeHtml(data.email)}?subject=Re: ${encodeURIComponent(subjectLabel)} – Voter-Pulse"
                        style="display:inline-block;
                               background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);
                               color:#ffffff;text-decoration:none;
@@ -415,11 +415,11 @@ export const contactAdminNotificationTemplate = (data: ContactFormData): string 
                        padding:20px 40px;text-align:center;">
               <p style="margin:0 0 4px;font-size:12px;color:#9ca3af;line-height:1.6;">
                 This is an automated admin notification from
-                <strong style="color:#4f46e5;">Ayala Web</strong>.
+                <strong style="color:#4f46e5;">Voter-Pulse</strong>.
                 Do not forward this email.
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${year} Ayala Web. All rights reserved.
+                © ${year} Voter-Pulse. All rights reserved.
               </p>
             </td>
           </tr>
