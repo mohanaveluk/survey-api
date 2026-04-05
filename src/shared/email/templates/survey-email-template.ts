@@ -85,7 +85,8 @@ export const surveyShareEmailTemplate = (params: SurveyShareEmailParams): string
   const urgencyBg     = remaining <= 3 ? '#fff1f2' : remaining <= 7 ? '#fffbeb' : '#f0fdf4';
 
   //logo image as base64 string (small file, so okay to inline)
-    const mailIconSrc = `https://storage.googleapis.com/inv-images/home/votec.png`;
+    const mailIconSrc1 = `https://storage.googleapis.com/inv-images/home/votec.png`;
+    const mailIconSrc  = `https://storage.googleapis.com/inv-images/home/vplogo10.png`;
   // Social share message
   const shareText = `🗳️ Cast your vote in "${surveyTitle}"! Your voice matters. Vote before ${formattedDate}.`;
 
@@ -123,10 +124,10 @@ export const surveyShareEmailTemplate = (params: SurveyShareEmailParams): string
                      padding:40px 40px 32px;text-align:center;">
 
             <!-- Logo / brand mark -->
-            <div style="display:inline-block;background:rgba(255,255,255,1);
-                        border-radius:18px;padding:8px;margin-bottom:18px;">
+            <div style="display:inline-block;background:rgba(255,255,255,0.05);
+                        border-radius:18px;padding:4px;margin-bottom:18px;">                        
               <img src="${mailIconSrc}"
-                     alt="Mail icon" width="60" height="60"
+                     alt="Mail icon" width="80" height="80"
                      style="display:block;border:0;" />
             </div>
 
