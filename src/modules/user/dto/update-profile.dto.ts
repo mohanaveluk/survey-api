@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsPhoneNumber, IsPostalCode, IsString, Matches, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
@@ -39,12 +39,12 @@ export class UpdateProfileDto {
   })
   mobile?: string;
 
-  @ApiProperty({
-    example: 'Computer Science',
-    description: 'User major/field of study',
+  @ApiPropertyOptional({
+    example: 'ABC Channel',
+    description: 'User Media Name',
   })
   @IsOptional()
-  @MinLength(2)
+  @IsString()
   major?: string;
 
   @ApiProperty({
