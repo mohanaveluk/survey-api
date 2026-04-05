@@ -80,7 +80,7 @@ export const voteOtpEmailTemplate = (params: {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Your vote verification code – Ayala Web</title>
+  <title>Your vote verification code – Voter-Pulse</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f3ff;font-family:'Segoe UI',Arial,sans-serif;">
 
@@ -235,14 +235,14 @@ export const voteOtpEmailTemplate = (params: {
             <td style="background:#f7f8ff;border-top:1px solid #e5e7eb;
                        padding:24px 40px;text-align:center;">
               <p style="margin:0 0 6px;font-size:13px;color:#888;line-height:1.6;">
-                This email was sent by <strong style="color:#4f46e5;">Ayala Web</strong>
+                This email was sent by <strong style="color:#4f46e5;">Voter-Pulse</strong>
                 on behalf of the survey organiser.
                 Questions? Contact our
                 <a href="mailto:support@${domain}"
                    style="color:#4f46e5;text-decoration:none;font-weight:600;">support team</a>.
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${year} Ayala Web. All rights reserved.
+                © ${year} Voter-Pulse. All rights reserved.
               </p>
             </td>
           </tr>
@@ -279,7 +279,7 @@ export const buildOtpEmailHtml = (otp: string, firstName: string): string => {
   <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-    <title>Password Reset Code – Ayala Web</title>
+    <title>Password Reset Code – Voter-Pulse</title>
   </head>
   <body style="margin:0;padding:0;background:#f5f3ff;
               font-family:'Segoe UI',Arial,sans-serif;">
@@ -311,7 +311,7 @@ export const buildOtpEmailHtml = (otp: string, firstName: string): string => {
             <td style="padding:40px 40px 32px;">
               <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
                 Hi <strong>${firstName}</strong>,<br/><br/>
-                We received a request to reset the password for your Ayala Web account.
+                We received a request to reset the password for your Voter-Pulse account.
                 Use the code below — it is valid for <strong>5 minutes</strong>.
               </p>
   
@@ -387,10 +387,10 @@ export const buildOtpEmailHtml = (otp: string, firstName: string): string => {
             <td style="background:#f7f8ff;border-top:1px solid #e5e7eb;
                       padding:20px 40px;text-align:center;">
               <p style="margin:0 0 4px;font-size:13px;color:#888;">
-                Sent by <strong style="color:#4f46e5;">Ayala Web</strong>
+                Sent by <strong style="color:#4f46e5;">Voter-Pulse</strong>
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${year} Ayala Web. All rights reserved.
+                © ${year} Voter-Pulse. All rights reserved.
               </p>
             </td>
           </tr>

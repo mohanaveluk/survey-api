@@ -47,7 +47,7 @@ export const verifyEmailTemplate = (code: string, userGuid: string, firstName: s
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Verify your email – Ayala Web</title>
+  <title>Verify your email – Voter-Pulse</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f2f8;font-family:'Segoe UI',Arial,sans-serif;">
 
@@ -90,7 +90,7 @@ export const verifyEmailTemplate = (code: string, userGuid: string, firstName: s
 
               <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
                 Hi ${first_name},<br/><br/>
-                Thanks for signing up for <strong style="color:#667eea;">Ayala Web</strong>.
+                Thanks for signing up for <strong style="color:#667eea;">Voter-Pulse</strong>.
                 To activate your account, click the button below. This link is valid for
                 <strong>30&nbsp;minutes</strong>.
               </p>
@@ -203,14 +203,14 @@ export const verifyEmailTemplate = (code: string, userGuid: string, firstName: s
             <td style="background:#f7f8ff;border-top:1px solid #eee;
                        padding:24px 40px;text-align:center;">
               <p style="margin:0 0 6px;font-size:13px;color:#888;line-height:1.6;">
-                This email was sent by <strong style="color:#667eea;">Ayala Web</strong>.
+                This email was sent by <strong style="color:#667eea;">Voter-Pulse</strong>.
                 If you have questions, contact our
                 <a href="mailto:support@${domain}"
                    style="color:#667eea;text-decoration:none;font-weight:600;">
                   support team</a>.
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${year} Ayala Web. All rights reserved.
+                © ${year} Voter-Pulse. All rights reserved.
               </p>
             </td>
           </tr>
