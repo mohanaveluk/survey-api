@@ -39,6 +39,15 @@ export class CreatePartyDto {
   leader_name?: string;
 
   @ApiPropertyOptional({
+    example: 'Jane Doe',
+    description: 'Name of the party contestant',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  contestant_name?: string;
+
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     description: 'Party logo image file (JPEG, PNG, GIF, WebP - max 5MB)',

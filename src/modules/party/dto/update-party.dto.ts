@@ -30,6 +30,15 @@ export class UpdatePartyDto extends PartialType(CreatePartyDto) {
   @MaxLength(100)
   leader_name?: string;
 
+  @ApiPropertyOptional({
+    example: 'Jane Doe',
+    description: 'Name of the party contestant',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  contestant_name?: string;
+
   @ApiPropertyOptional({ 
     type: 'string',
     format: 'binary',
