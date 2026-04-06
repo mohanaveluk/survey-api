@@ -137,6 +137,7 @@ CREATE TABLE `party` (
   `logo_url` varchar(255) DEFAULT NULL,
   `created_by` varchar(36) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+   `contestant_name` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_c0eb8cdcaaae44dae7538677080` (`created_by`),
   CONSTRAINT `FK_c0eb8cdcaaae44dae7538677080` FOREIGN KEY (`created_by`) REFERENCES `user` (`uguid`)
