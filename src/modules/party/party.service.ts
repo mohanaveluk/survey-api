@@ -60,12 +60,13 @@ export class PartyService {
             else if (createPartyDto.logo_url) {
                 logoUrl = createPartyDto.logo_url;
             }
-            
+
 
             const partyData = {
                 name: createPartyDto.name,
                 color: createPartyDto.color,
                 leader_name: createPartyDto.leader_name,
+                contestant_name: createPartyDto.contestant_name,
                 logo_url: logoUrl || null,
                 createdBy: createPartyDto.createdBy || user.uguid,
                 createdAt: createPartyDto.createdAt || new Date(),

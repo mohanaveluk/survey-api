@@ -23,6 +23,9 @@ export class PartyMaster {
   @Column({ length: 100, nullable: true })
   leader_name: string;
 
+  @Column({ length: 100, nullable: true })
+  contestant_name: string;
+
   @Column({ nullable: true })
   logo_url: string;
 
