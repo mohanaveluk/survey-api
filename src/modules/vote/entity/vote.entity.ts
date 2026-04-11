@@ -1,4 +1,4 @@
-import { PartyMaster } from 'src/modules/party/entity/party.entity';
+import { Party } from 'src/modules/party/entity/party.entity';
 import { Survey } from 'src/modules/survey/entity/survey.entity';
 import {
   Entity,
@@ -47,7 +47,7 @@ export class Vote {
   @JoinColumn({ name: 'survey_id' })
   survey: Survey;
 
-  @ManyToOne(() => PartyMaster)
+  @ManyToOne(() => Party)
   @JoinColumn({ name: 'party_id' })
-  party: PartyMaster;
+  party: Party;
 }

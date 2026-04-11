@@ -4,7 +4,7 @@ import { RoleEntity } from './roles.entity';
 import { UserLoginHistory } from 'src/modules/auth/entity/user-login-history.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { Survey } from 'src/modules/survey/entity/survey.entity';
-import { PartyMaster } from 'src/modules/party/entity/party.entity';
+import { Party} from 'src/modules/party/entity/party.entity';
 
 @Entity('user')
 export class User {
@@ -99,7 +99,7 @@ export class User {
   @OneToMany(() => Survey, survey => survey.creator)
   surveys: Survey[];
 
-  @OneToMany(() => PartyMaster, party => party.creator)
-  parties: PartyMaster[];
+  @OneToMany(() => Party, party => party.creator)
+  parties: Party[];
 
 }

@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 import { Vote } from "./entity/vote.entity";
-import { PartyMaster } from "../party/entity/party.entity";
+import { Party } from "../party/entity/party.entity";
 import { Survey, SurveyStatus } from "../survey/entity/survey.entity";
 import { CreateVoteDto } from "./dto/create-vote.dto";
 import { SurveyStatisticsDto, SurveyVoteSummaryDto, VoteSummaryDto } from "./dto/vote-summary.dto";
@@ -25,8 +25,8 @@ export class VoteService {
     private tempVoteRepository: Repository<TempVote>,      
     @InjectRepository(Survey)
     private surveyRepository: Repository<Survey>,
-    @InjectRepository(PartyMaster)
-    private partyRepository: Repository<PartyMaster>,
+    @InjectRepository(Party)
+    private partyRepository: Repository<Party>,
     private emailService: EmailService,
     private logger: CustomLoggerService
   ) {}

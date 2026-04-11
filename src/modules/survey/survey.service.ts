@@ -6,7 +6,7 @@ import { User } from "../user/entity/user.entity";
 import { CreateSurveyDto } from "./dto/create-survey.dto";
 import { PublishSurveyDto, UpdateSurveyDto } from "./dto/update-survey.dto";
 import { SurveyParty } from "../survey-party/entity/survey-party.entity";
-import { PartyMaster } from "../party/entity/party.entity";
+import { Party } from "../party/entity/party.entity";
 import { surveyShareEmailTemplate } from "src/shared/email/templates/survey-email-template";
 import { EmailService } from "src/shared/email/email.service";
 
@@ -19,8 +19,8 @@ export class SurveyService {
     private userRepository: Repository<User>,
     @InjectRepository(SurveyParty)
     private surveyPartyRepository: Repository<SurveyParty>,
-    @InjectRepository(PartyMaster)
-    private partyRepository: Repository<PartyMaster>,
+    @InjectRepository(Party)
+    private partyRepository: Repository<Party>,
     private emailService: EmailService,
 
   ) {}
@@ -619,7 +619,7 @@ async create(createSurveyDto: CreateSurveyDto, user?: User): Promise<Survey> {
         const surveyParties = partyIds.map((partyId) =>
           this.surveyPartyRepository.create({
             survey: { id: surveyId } as Survey,
-            party: { id: partyId } as PartyMaster,
+            party: { id: partyId } as Party,
           })
         );
 

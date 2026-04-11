@@ -27,19 +27,19 @@ import {
     ApiBody,
     ApiConsumes,
 } from '@nestjs/swagger';
-import { PartyService } from './party.service';
+import { PartyMasterService } from './party-master.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CreatePartyDto } from './dto/create-party.dto';
-import { Party } from './entity/party.entity';
+import { CreatePartyMasterDto } from './dto/create-party-master.dto';
+import { PartyMaster } from './entity/party-master.entity';
 import { ResponseDto } from 'src/common/dto/response.dto';
-import { UpdatePartyDto } from './dto/update-party.dto';
+import { UpdatePartyMasterDto } from './dto/update-party-master.dto';
 import { maxFileSize } from 'src/shared/utils/file-validation.util';
 
-@ApiTags('Party')
-@Controller('party')
-export class PartyController {
+@ApiTags('Party Master')
+@Controller('party_master')
+export class PartyMasterController {
     constructor(
-        private readonly partyService: PartyService
+        private readonly partyService: PartyMasterService
     ) { }
 
     @Post()
@@ -55,12 +55,12 @@ export class PartyController {
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         description: 'Party data with optional logo image',
-        type: CreatePartyDto,
+        type: CreatePartyMasterDto,
     })
     @ApiResponse({
         status: HttpStatus.CREATED,
         description: 'Party created successfully with logo URL',
-        type: ResponseDto<Party>,
+        type: ResponseDto<PartyMaster>,
     })
     @ApiResponse({
         status: HttpStatus.CONFLICT,
@@ -75,7 +75,7 @@ export class PartyController {
         description: 'Authentication required',
     })
     async create(
-        @Body() createPartyDto: CreatePartyDto,
+        @Body() createPartyDto: CreatePartyMasterDto,
         @Request() req,
         @UploadedFile(
               new ParseFilePipe({
@@ -86,7 +86,7 @@ export class PartyController {
                 fileIsRequired: false,
               }),
             ) file?: Express.Multer.File,
-    ): Promise<ResponseDto<Party>> {
+    ): Promise<ResponseDto<PartyMaster>> {
         const party = await this.partyService.create(createPartyDto, req.user, file );
         const message = file
             ? 'Party created successfully with logo uploaded'
@@ -113,7 +113,7 @@ export class PartyController {
     @ApiResponse({
         status: HttpStatus.OK,
         description: 'Parties retrieved successfully',
-        type: ResponseDto<Party[]>,
+        type: ResponseDto<PartyMaster[]>,
     })
     @ApiResponse({
         status: HttpStatus.BAD_REQUEST,
@@ -122,7 +122,7 @@ export class PartyController {
     async findAll(
         @Query('search') search?: string,
         @Query('userId') userId?: string
-    ): Promise<ResponseDto<Party[]>> {
+    ): Promise<ResponseDto<PartyMaster[]>> {
         const parties = search
             ? await this.partyService.findByName(search)
             : await this.partyService.findAll(userId);
@@ -183,7 +183,7 @@ export class PartyController {
     @ApiResponse({
         status: HttpStatus.OK,
         description: 'Party retrieved successfully',
-        type: ResponseDto<Party>,
+        type: ResponseDto<PartyMaster>,
     })
     @ApiResponse({
         status: HttpStatus.NOT_FOUND,
@@ -193,7 +193,7 @@ export class PartyController {
         status: HttpStatus.BAD_REQUEST,
         description: 'Invalid party ID format',
     })
-    async findOne(@Param('id') id: string): Promise<ResponseDto<Party>> {
+    async findOne(@Param('id') id: string): Promise<ResponseDto<PartyMaster>> {
         const party = await this.partyService.findOne(id);
         return ResponseDto.success(party, 'Party retrieved successfully');
     }
@@ -212,12 +212,12 @@ export class PartyController {
     })
     @ApiBody({
         description: 'Updated party data with optional logo image',
-        type: UpdatePartyDto,
+        type: UpdatePartyMasterDto,
     })
     @ApiResponse({
         status: HttpStatus.OK,
         description: 'Party updated successfully with logo URL',
-        type: ResponseDto<Party>,
+        type: ResponseDto<PartyMaster>,
     })
     @ApiResponse({
         status: HttpStatus.NOT_FOUND,
@@ -239,7 +239,7 @@ export class PartyController {
     @UseInterceptors(FileInterceptor('file'))
     async update(
         @Param('id') id: string,
-        @Body() updatePartyDto: UpdatePartyDto,
+        @Body() updatePartyDto: UpdatePartyMasterDto,
         @Request() req,
         @UploadedFile(
               new ParseFilePipe({
@@ -250,7 +250,7 @@ export class PartyController {
                 fileIsRequired: false,
               }),
             ) file?: Express.Multer.File
-    ): Promise<ResponseDto<Party>> {
+    ): Promise<ResponseDto<PartyMaster>> {
         const party = await this.partyService.update(id, updatePartyDto, req.user, file);
         const message = file
             ? 'Party updated successfully with logo uploaded'

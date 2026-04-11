@@ -6,26 +6,26 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
-import { Party } from "./entity/party.entity";
+import { PartyMaster } from "./entity/party-master.entity";
 import { CloudStorageService } from '../../common/services/cloud-storage.service';
-import { CreatePartyDto } from './dto/create-party.dto';
-import { UpdatePartyDto } from './dto/update-party.dto';
+import { CreatePartyMasterDto } from './dto/create-party-master.dto';
+import { UpdatePartyMasterDto } from './dto/update-party-master.dto';
 import { User } from '../user/entity/user.entity';
 @Injectable()
-export class PartyService {
+export class PartyMasterService {
     constructor(
-        @InjectRepository(Party)
-        private partyRepository: Repository<Party>,
+        @InjectRepository(PartyMaster)
+        private partyRepository: Repository<PartyMaster>,
         private readonly cloudStorageService: CloudStorageService,
         @InjectRepository(User)
         private userRepository: Repository<User>
     ) { }
 
     async create(
-        createPartyDto: CreatePartyDto,
+        createPartyDto: CreatePartyMasterDto,
         userInfo: any,
         logoFile?: Express.Multer.File
-    ): Promise<Party> {
+    ): Promise<PartyMaster> {
         try {
             //verify user exists in User table before fetching parties
             const user = await this.userRepository.findOne({
@@ -38,7 +38,7 @@ export class PartyService {
 
             // Check if party with same name already exists
             const existingPartyByName = await this.partyRepository.findOne({
-                where: { name: createPartyDto.name, createdBy: createPartyDto.createdBy || user.uguid },
+                where: { name: createPartyDto.name },
             });
 
             if (existingPartyByName) {
@@ -68,7 +68,6 @@ export class PartyService {
                 leader_name: createPartyDto.leader_name,
                 contestant_name: createPartyDto.contestant_name,
                 logo_url: logoUrl || null,
-                countryId: createPartyDto.countryId || null,
                 createdBy: createPartyDto.createdBy || user.uguid,
                 createdAt: createPartyDto.createdAt || new Date(),
             };
@@ -91,7 +90,7 @@ export class PartyService {
         }
     }
 
-    async findAll(userId: string): Promise<Party[]> {
+    async findAll(userId: string): Promise<PartyMaster[]> {
         try {
 
             //verify user exists in User table before fetching parties
@@ -104,8 +103,7 @@ export class PartyService {
             }
 
             return await this.partyRepository.find({
-                where: { createdBy: userId },
-                relations: ['surveys'],
+                relations: ['country'], // Include country relation to avoid lazy loading issues,
                 order: { name: 'ASC' },
             });
         } catch (error) {
@@ -113,11 +111,10 @@ export class PartyService {
         }
     }
 
-    async findOne(id: string): Promise<Party> {
+    async findOne(id: string): Promise<PartyMaster> {
         try {
             const party = await this.partyRepository.findOne({
-                where: { id },
-                relations: ['surveys'],
+                where: { id }
             });
 
             if (!party) {
@@ -135,10 +132,10 @@ export class PartyService {
 
     async update(
         id: string,
-        updatePartyDto: UpdatePartyDto,
+        updatePartyDto: UpdatePartyMasterDto,
         userInfo: any,
         logoFile?: Express.Multer.File
-    ): Promise<Party> {
+    ): Promise<PartyMaster> {
         try {
 
             //verify user exists in User table before fetching parties
@@ -209,18 +206,6 @@ export class PartyService {
         try {
             const party = await this.findOne(id);
 
-            // Check if party is associated with any surveys
-            const partyWithSurveys = await this.partyRepository.findOne({
-                where: { id },
-                relations: ['surveys'],
-            });
-
-            if (partyWithSurveys?.surveys && partyWithSurveys.surveys.length > 0) {
-                throw new ConflictException(
-                    `Cannot delete party '${party.name}' as it is associated with ${partyWithSurveys.surveys.length} survey(s)`
-                );
-            }
-
             // Delete logo file if it exists
             if (party.logo_url) {
                 await this.cloudStorageService.deleteFile(party.logo_url);
@@ -238,11 +223,10 @@ export class PartyService {
         }
     }
 
-    async findByName(name: string): Promise<Party[]> {
+    async findByName(name: string): Promise<PartyMaster[]> {
         try {
             return await this.partyRepository
                 .createQueryBuilder('party')
-                .leftJoinAndSelect('party.surveys', 'surveys')
                 .where('LOWER(party.name) LIKE LOWER(:name)', { name: `%${name}%` })
                 .orderBy('party.name', 'ASC')
                 .getMany();
