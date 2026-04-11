@@ -8,7 +8,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, QueryFailedError, Repository } from "typeorm";
 import { SurveyParty } from "./entity/survey-party.entity";
 import { Survey } from '../survey/entity/survey.entity';
-import { PartyMaster } from '../party/entity/party.entity';
+import { Party } from '../party/entity/party.entity';
 import { BulkCreateSurveyPartyDto, CreateSurveyPartyDto } from './dto/create-survey-party.dto';
 
 @Injectable()
@@ -18,8 +18,8 @@ export class SurveyPartyService {
     private surveyPartyRepository: Repository<SurveyParty>,
     @InjectRepository(Survey)
     private surveyRepository: Repository<Survey>,
-    @InjectRepository(PartyMaster)
-    private partyRepository: Repository<PartyMaster>
+    @InjectRepository(Party)
+    private partyRepository: Repository<Party>
   ) {}
 
   async create(

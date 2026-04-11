@@ -26,6 +26,9 @@ import { SurveyModule } from './modules/survey/survey.module';
 import { SurveyPartyModule } from './modules/survey-party/survey-party.module';
 import { VoteModule } from './modules/vote/vote.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { BlogModule } from './modules/blog/blog.module';
+import { PartyMasterModule } from './modules/party-Master/party-master.module';
+import { CountryModule } from './modules/country/country.module';
 
 
 @Module({
@@ -54,7 +57,10 @@ import { ChatModule } from './modules/chat/chat.module';
     SurveyModule,
     SurveyPartyModule,
     VoteModule,
-    ChatModule
+    ChatModule,
+    BlogModule,
+    PartyMasterModule,
+    CountryModule
   ],
   controllers: [
     UserController,

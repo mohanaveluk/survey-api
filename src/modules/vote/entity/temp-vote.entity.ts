@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, CreateDateColumn, BeforeInsert } from 'typeorm';
-import { PartyMaster } from '../../party/entity/party.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Survey } from 'src/modules/survey/entity/survey.entity';
+import { Party } from 'src/modules/party/entity/party.entity';
 
 @Entity('temp_votes')
 export class TempVote {
@@ -46,7 +46,7 @@ export class TempVote {
   @JoinColumn({ name: 'survey_id' })
   survey: Survey;
 
-  @ManyToOne(() => PartyMaster)
+  @ManyToOne(() => Party)
   @JoinColumn({ name: 'party_id' })
-  party: PartyMaster;
+  party: Party;
 }

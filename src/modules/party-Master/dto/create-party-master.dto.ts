@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreatePartyDto {
+export class CreatePartyMasterDto {
   // @ApiProperty({
   //   example: 'PARTY001',
   //   description: 'Unique identifier for the party',
@@ -79,12 +79,12 @@ export class CreatePartyDto {
   createdAt?: Date;
 
   @ApiPropertyOptional({
-    example: '492d31c6-f6b6-4f82-9e28-e270f2ac5731',
-    description: 'Country code where the party is based',
+    example: 'United States',
+    description: 'Country where the party is based',
   })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  countryId?: string;
+  country?: string;
 
 }
