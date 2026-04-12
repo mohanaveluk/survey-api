@@ -474,7 +474,7 @@ VALUES
 (UUID(),'Dravida Munnetra Kazhagam (DMK)','#E31E24','M K Stalin','TBD','https://images.seeklogo.com/logo-png/41/1/dmk-logo-png_seeklogo-411320.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'AIADMK','#008000','Edappadi K Palaniswami','TBD','https://images.seeklogo.com/logo-png/41/1/aiadmk-logo-png_seeklogo-411321.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'Trinamool Congress','#009933','Mamata Banerjee','TBD','https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/All_India_Trinamool_Congress_flag_%283%29.svg/640px-All_India_Trinamool_Congress_flag_%283%29.svg.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
-(UUID(),'Telugu Desam Party','#FFFF00','N Chandrababu Naidu','TBD','https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/High_Quality_Telugu_Desam_Party_Flag.png/640px-High_Quality_Telugu_Desam_Party_Flag.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
+(UUID(),'Telugu Desam Party','#FFFF00','N Chandrababu Naidu','TBD','https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Telugu_Desam_Party_Flag.png/640px-Telugu_Desam_Party_Flag.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'YSR Congress Party','#1E90FF','Y S Jagan Mohan Reddy','TBD','https://4.bp.blogspot.com/-ELaPNYlWzDQ/TXvaYIjau0I/AAAAAAAAKhE/E3OhtfWqpNM/s1600/ysr_flag.jpg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 
 (UUID(),'Shiv Sena','#FF7F00','Uddhav Thackeray','TBD','https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Shiv_Sena_flag.jpg/640px-Shiv_Sena_flag.jpg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
@@ -530,7 +530,7 @@ VALUES
 (UUID(),'Kerala Congress Joseph','#33AA33','P J Joseph','TBD','https://upload.wikimedia.org/wikipedia/en/2/22/Kerala_Congress_flag.svg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'Revolutionary Marxist Party','#CC0000','TK Ramakrishnan','TBD','https://upload.wikimedia.org/wikipedia/en/3/3d/RMP_flag.svg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'All India N R Congress','#3366CC','N Rangasamy','TBD','https://upload.wikimedia.org/wikipedia/en/8/8f/NR_Congress_flag.svg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
-(UUID(),'All India Anna Dravida Munnetra Kazhagam','#008000','Edappadi K Palaniswami','TBD','https://upload.wikimedia.org/wikipedia/en/4/45/AIADMK_flag.svg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
+(UUID(),'All India Anna Dravida Munnetra Kazhagam','#008000','Edappadi K Palaniswami','TBD','https://images.seeklogo.com/logo-png/41/1/aiadmk-logo-png_seeklogo-411321.png',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW()),
 (UUID(),'Tamilaga Vettri Kazhagam','#c00500','Vijay','TBD','https://storage.googleapis.com/inv-images/party-logos/tvk.jpg',(SELECT id FROM country WHERE iso_code='IN'),'system',NOW());
 
 -- UK
